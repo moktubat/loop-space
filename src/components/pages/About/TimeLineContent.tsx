@@ -38,6 +38,12 @@ const TimelineList = styled.ul`
 const Article = styled.article`
     position: relative;
     height: 100vh;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+    }
 `;
 
 const ImageGrid = styled.ul`
@@ -47,14 +53,57 @@ const ImageGrid = styled.ul`
     list-style: none;
     padding: 0;
     margin: 0;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+        height: auto;
+        margin-bottom: 48px;
+    }
 `;
 
-const ImageListItem = styled.li<{ $width: string; $aspect: string; $pos: any }>`
+const ImageListItem = styled.li<{
+    $width: string;
+    $aspect: string;
+    $pos: any;
+    $type: 'portrait' | 'square' | 'logo';
+}>`
     position: absolute;
     width: ${props => props.$width};
     aspect-ratio: ${props => props.$aspect};
-    ${props => props.$pos}
+    ${props => props.$pos};
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        position: relative;
+        width: 100%;
+        inset: unset;
+        transform: none !important;
+
+        ${({ $type }) =>
+        $type === 'logo' &&
+        `
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        `}
+
+        ${({ $type }) =>
+        $type === 'square' &&
+        `
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+        `}
+
+        ${({ $type }) =>
+        $type === 'portrait' &&
+        `
+            grid-column: 1 / 3;
+            grid-row: 2 / 3;
+        `}
+    }
 `;
+
 
 const ImageWrapper = styled.div`
     position: relative;
@@ -69,7 +118,18 @@ const ContentWrapper = styled.div<{ $pos: any }>`
     display: flex;
     flex-direction: column;
     gap: 12px;
-    ${props => props.$pos}
+    ${props => props.$pos};
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        position: relative;
+        max-width: 100%;
+        padding: 0 8px;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        transform: none;
+    }
 `;
 
 const Title = styled.h2`
@@ -78,6 +138,11 @@ const Title = styled.h2`
     font-size: 40px;
     line-height: 116%;
     font-weight: 500;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        font-size: 28px;
+        line-height: 120%;
+    }
 `;
 
 const Description = styled.p`
@@ -86,7 +151,46 @@ const Description = styled.p`
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        font-size: 14px;
+        line-height: 22px;
+    }
 `;
+
+const YearBadge = styled.div<{ $isFirst?: boolean }>`
+  display: none;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start; /* 👈 FIX */
+
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #fff;
+
+    border-left: 2px solid #EA2B7B;
+    border-top: 2px solid #EA2B7B;
+    border-right: 2px solid #EA2B7B;
+    border-bottom: 4px solid #EA2B7B;
+
+    font-family: ${FONT.urbanist};
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #EA2B7B;
+
+    margin-bottom: 16px;
+    margin-top: ${({ $isFirst }) => ($isFirst ? '0' : '24px')};
+
+    opacity: 0;
+    transform: translateY(6px);
+  }
+`;
+
+
 
 const BackgroundContainer = styled.div`
     position: absolute;
@@ -97,6 +201,10 @@ const BackgroundContainer = styled.div`
     width: 100%;
     opacity: 0.4;
     pointer-events: none;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        display: none;
+    }
 `;
 
 const YearsWrapper = styled.div`
@@ -185,12 +293,38 @@ const TimeLineContent = () => {
 
     }, []);
 
+    useEffect(() => {
+        if (window.innerWidth > BREAKPOINTS.md) return;
+
+        const mobileYears = gsap.utils.toArray<HTMLElement>('[data-mobile-year]');
+
+        mobileYears.forEach((year) => {
+            gsap.to(year, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: year,
+                    start: "top 85%",
+                    toggleActions: "play none none none",
+                },
+            });
+        });
+    }, []);
+
     return (
         <Section ref={timelineRef}>
             <TimelineList>
                 {TIMELINE_ENTRIES.map((entry, index) => (
                     <li key={index}>
                         <Article>
+                            <YearBadge
+                                data-mobile-year
+                                $isFirst={index === 0}
+                            >
+                                {entry.year}
+                            </YearBadge>
                             {/* Images */}
                             <ImageGrid>
                                 {entry.images.map((image: ImageConfig, imgIndex) => (
@@ -199,6 +333,7 @@ const TimeLineContent = () => {
                                         $width={image.width}
                                         $aspect={image.aspectRatio}
                                         $pos={image.position}
+                                        $type={image.type}
                                     >
                                         <ImageWrapper>
                                             <LazyImage

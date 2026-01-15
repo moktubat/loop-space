@@ -1,5 +1,6 @@
 export type ImageConfig = {
     src: string;
+    type: 'portrait' | 'square' | 'logo';
     alt: string;
     width: string;
     aspectRatio: string;
@@ -29,6 +30,7 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '35vw',
                 aspectRatio: '16/9',
                 src: '/portrait1.jpg',
+                type: 'portrait',
                 alt: 'Image 1',
                 parallax: 35,
             },
@@ -37,6 +39,7 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '215.625px',
                 aspectRatio: '1/1',
                 src: '/square1.jpg',
+                type: 'square',
                 alt: 'Image 2',
                 parallax: 25,
             },
@@ -45,6 +48,7 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '215.625px',
                 aspectRatio: '3/4',
                 src: '/logo1.png',
+                type: 'logo',
                 alt: 'Image 3',
                 parallax: 10,
             }
@@ -55,13 +59,14 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
         year: '2024',
         title: 'Expanding <br /> Our Design Vision',
         desc: 'In 2024, we continued to push the boundaries of interior design, introducing innovative solutions and expanding our portfolio with bold new projects.',
-        contentPosition: { bottom: '0', left: '50%', transform: 'translateX(-50%)' },
+        contentPosition: { bottom: '20%', left: '20%', transform: 'translateX(-50%)' },
         images: [
             {
-                position: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+                position: { top: '50%', right: '0%' },
                 width: '35vw',
                 aspectRatio: '16/9',
                 src: '/portrait2.jpg',
+                type: 'portrait',
                 alt: 'Image 1',
                 parallax: 35,
             },
@@ -70,14 +75,16 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '215.625px',
                 aspectRatio: '1/1',
                 src: '/square2.jpg',
+                type: 'square',
                 alt: 'Image 2',
                 parallax: 25,
             },
             {
-                position: { top: '25%', left: '0' },
+                position: { top: '15%', left: '0' },
                 width: '215.625px',
                 aspectRatio: '3/4',
                 src: '/logo2.png',
+                type: 'logo',
                 alt: 'Image 3',
                 parallax: 10,
             }
@@ -95,6 +102,7 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '35vw',
                 aspectRatio: '16/9',
                 src: '/portrait3.jpg',
+                type: 'portrait',
                 alt: 'Image 1',
                 parallax: 35,
             },
@@ -103,6 +111,7 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '215.625px',
                 aspectRatio: '1/1',
                 src: '/square3.jpg',
+                type: 'square',
                 alt: 'Image 2',
                 parallax: 25,
             },
@@ -111,6 +120,7 @@ export const TIMELINE_ENTRIES: TimelineEntry[] = [
                 width: '215.625px',
                 aspectRatio: '3/4',
                 src: '/logo3.png',
+                type: 'logo',
                 alt: 'Image 3',
                 parallax: 10,
             }
