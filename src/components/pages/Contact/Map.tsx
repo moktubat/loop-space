@@ -9,11 +9,16 @@ const MapContainer = styled.div`
     width: 100%;
     height: 450px;
     border: 0;
+<<<<<<< HEAD
     border-radius: 12px; /* optional */
+=======
+    border-radius: 12px;
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   }
 `;
 
 const Map = () => {
+<<<<<<< HEAD
     return (
         <MapContainer>
             <iframe
@@ -27,3 +32,18 @@ const Map = () => {
 };
 
 export default Map;
+=======
+  return (
+    <MapContainer>
+      <iframe
+        title="Map location"
+        src="https://www.google.com/maps?q=New+Mexico+St,+Green+River,+WY+82935&output=embed"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+    </MapContainer>
+  );
+};
+
+export default Map;
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937

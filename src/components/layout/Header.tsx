@@ -87,6 +87,7 @@ const NavLink = styled.a`
 `;
 
 const ContactButton = styled.a`
+<<<<<<< HEAD
   font-family: ${FONT.urbanist};
   font-size: 16px;
   font-weight: 500;
@@ -100,6 +101,23 @@ const ContactButton = styled.a`
   &:hover {
     background: ${COLORS.brandPinkHover};
   }
+=======
+  background: #EA2B7B;
+  border-radius: 6px;
+  padding: 8px 16px;
+  border-left: 2px solid #F8BDD6;
+  border-top: 2px solid #F8BDD6;
+  border-right: 2px solid #F8BDD6;
+  border-bottom: 4px solid #F8BDD6;
+
+  color: #FFF;
+  font-family: ${FONT.urbanist};
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+
+  cursor: pointer;
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 `;
 
 const MenuButton = styled.button`

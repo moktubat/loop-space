@@ -19,8 +19,17 @@ import styled from "styled-components";
 
 gsap.registerPlugin(ScrollTrigger);
 
+<<<<<<< HEAD
 const StorySection = styled.section`
   background-color: #F9FAFB;
+=======
+/* -------------------------------- */
+/* STYLES */
+/* -------------------------------- */
+
+const StorySection = styled.section`
+  background-color: #f9fafb;
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   padding: 100px 16px;
 `;
 
@@ -35,7 +44,10 @@ const IntroBlock = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+<<<<<<< HEAD
   margin-bottom: 10px;
+=======
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 `;
 
 const DescriptionText = styled.p`
@@ -47,7 +59,11 @@ const DescriptionText = styled.p`
 
 const StoryImage = styled.div`
   width: 100%;
+<<<<<<< HEAD
   height: 500px;
+=======
+  height: 500px; /* CRITICAL: lock height */
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   position: relative;
 `;
 
@@ -61,8 +77,13 @@ const MissionVisionContainer = styled.div`
 `;
 
 const Block = styled.div.withConfig({
+<<<<<<< HEAD
     shouldForwardProp: (prop) => prop !== "bgColor"
 }) <{ bgColor: string }>`
+=======
+  shouldForwardProp: (prop) => prop !== "bgColor",
+})<{ bgColor: string }>`
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   flex: 1;
   background: ${(p) => p.bgColor};
   padding: 24px;
@@ -108,6 +129,7 @@ const BlockDescription = styled.p`
   color: ${COLORS.white};
 `;
 
+<<<<<<< HEAD
 const OurStory = () => {
     const containerRef = useRef(null);
     const imageRef = useRef(null);
@@ -228,6 +250,154 @@ const OurStory = () => {
             </StoryContainer>
         </StorySection>
     );
+=======
+/* -------------------------------- */
+/* COMPONENT */
+/* -------------------------------- */
+
+const OurStory = () => {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const imageRef = useRef<HTMLDivElement | null>(null);
+  const blocksRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  useLayoutEffect(() => {
+    if (!sectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      /* INTRO */
+      gsap.fromTo(
+        ".intro-animate",
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: "power3.out",
+          stagger: 0.15,
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            once: true,
+          },
+        }
+      );
+
+      /* IMAGE */
+      if (imageRef.current) {
+        gsap.fromTo(
+          imageRef.current,
+          { opacity: 0, y: 80 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1.2,
+            ease: "power3.out",
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: imageRef.current,
+              start: "top 85%",
+              once: true,
+            },
+          }
+        );
+      }
+
+      /* MISSION + VISION */
+      gsap.fromTo(
+        blocksRef.current,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          stagger: 0.2,
+          ease: "power3.out",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: blocksRef.current[0],
+            start: "top 80%",
+            once: true,
+          },
+        }
+      );
+    }, sectionRef);
+
+    ScrollTrigger.refresh();
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <StorySection ref={sectionRef}>
+      <StoryContainer>
+        <IntroBlock>
+          <Heading className="intro-animate">
+            Our <span className="highlightTxt">Story</span>
+          </Heading>
+
+          <DescriptionText className="intro-animate">
+            Founded in 2020, Loop Space was created with a passion for designing
+            interiors that are both stylish and functional. We believe in
+            blending innovation, elegance, and comfort to craft spaces that
+            reflect individuality.
+          </DescriptionText>
+        </IntroBlock>
+
+        <StoryImage ref={imageRef}>
+          <Image
+            src={ourStory}
+            alt="Our Story"
+            fill
+            priority
+            style={{ objectFit: "cover" }}
+          />
+        </StoryImage>
+
+        <MissionVisionContainer>
+          <Block
+            bgColor={COLORS.brandPink}
+            ref={(el) => (blocksRef.current[0] = el)}
+          >
+            <BlockTitle>
+              <IconWrapper>
+                <Mission width={40} height={40} />
+              </IconWrapper>
+              <h3>OUR MISSION</h3>
+            </BlockTitle>
+
+            <BlockDivider />
+
+            <BlockDescription>
+              At Loop Space, we strive to create interiors that seamlessly blend
+              style and functionality. Our goal is to transform spaces into
+              personalized, inspiring environments.
+            </BlockDescription>
+          </Block>
+
+          <Block
+            bgColor="#5A378F"
+            ref={(el) => (blocksRef.current[1] = el)}
+          >
+            <BlockTitle>
+              <IconWrapper>
+                <Vision width={40} height={40} />
+              </IconWrapper>
+              <h3>OUR VISION</h3>
+            </BlockTitle>
+
+            <BlockDivider />
+
+            <BlockDescription>
+              To redefine how people experience spaces—where innovation meets
+              timeless elegance and every design empowers individuality.
+            </BlockDescription>
+          </Block>
+        </MissionVisionContainer>
+      </StoryContainer>
+    </StorySection>
+  );
+>>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 };
 
 export default OurStory;
