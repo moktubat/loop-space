@@ -1,10 +1,7 @@
 'use client';
 
 import { Heading } from "@/components/ui/Heading";
-<<<<<<< HEAD
-=======
 import { FONT } from "@/styles";
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 import { container } from "@/styles/mixins";
 import styled from "styled-components";
 
@@ -140,11 +137,7 @@ const ActionButton = styled.button`
   align-items: center;
   justify-content: space-between;
 
-<<<<<<< HEAD
-  font-family: Urbanist;
-=======
   font-family: ${FONT.urbanist};
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   font-size: 18px;
   font-weight: 600;
   color: #EA2B7B;
@@ -188,107 +181,6 @@ const Divider = styled.hr`
 `;
 
 const OpenPositions = () => {
-<<<<<<< HEAD
-    const jobs = [
-        {
-            title: "Interior Designer",
-            tags: ["Design", "Onsite", "Full Time"],
-            salary: "$700 - $1000",
-            salaryPeriod: "/Month",
-            deadline: "21 Nov 2025",
-            description:
-                "Join us as an Interior Designer! Create innovative and functional spaces for residential and commercial projects. Apply now!",
-        },
-        {
-            title: "Project Manager",
-            tags: ["Design", "Onsite", "Full Time"],
-            salary: "$1000 - $1500",
-            salaryPeriod: "/Month",
-            deadline: "21 Nov 2025",
-            description:
-                "Join us as a Project Manager! Lead interior design projects, ensuring quality and timely delivery. Apply now!",
-        },
-        {
-            title: "3D Visualizer",
-            tags: ["Design", "Onsite", "Full Time"],
-            salary: "$600 - $800",
-            salaryPeriod: "/Month",
-            deadline: "21 Nov 2025",
-            description:
-                "Join us as a 3D Visualizer! Create stunning 3D renderings and bring interior designs to life. Apply now!",
-        },
-    ];
-
-    return (
-        <Section>
-            <Wrapper>
-                <Intro>
-                    <Heading>
-                        OPEN <span className="highlightTxt">POSITIONS</span>
-                    </Heading>
-                </Intro>
-
-                {jobs.map((job, idx) => (
-                    <JobCard key={idx}>
-                        <JobTop>
-                            <JobLeft>
-                                <JobTitle>{job.title}</JobTitle>
-                                <JobTags>
-                                    {job.tags.map((tag, i) => (
-                                        <Tag key={i}>{tag}</Tag>
-                                    ))}
-                                </JobTags>
-                                <JobMeta>
-                                    <MetaLeft>
-                                        <MetaLabel>Salary</MetaLabel>
-                                        <MetaValue>
-                                            {job.salary} <span>{job.salaryPeriod}</span>
-                                        </MetaValue>
-                                    </MetaLeft>
-                                    <MetaRight>
-                                        <MetaLabel>Deadline</MetaLabel>
-                                        <MetaValue>{job.deadline}</MetaValue>
-                                    </MetaRight>
-                                </JobMeta>
-                            </JobLeft>
-                            <Buttons>
-                                <ActionButton>
-                                    Details
-                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                                        <path
-                                            d="M0.850098 9.18343L9.18343 0.850098M9.18343 0.850098H0.850098M9.18343 0.850098V9.18343"
-                                            stroke="#EA2B7B"
-                                            strokeWidth="1.7"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                </ActionButton>
-
-                                <ApplyButton>
-                                    Apply Now
-                                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                                        <path
-                                            d="M0.850098 9.18343L9.18343 0.850098M9.18343 0.850098H0.850098M9.18343 0.850098V9.18343"
-                                            stroke="#fff"
-                                            strokeWidth="1.7"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                </ApplyButton>
-                            </Buttons>
-                        </JobTop>
-
-                        <Divider />
-
-                        <JobBottom>{job.description}</JobBottom>
-                    </JobCard>
-                ))}
-            </Wrapper>
-        </Section>
-    );
-=======
   const jobs = [
     {
       title: "Interior Designer",
@@ -388,7 +280,6 @@ const OpenPositions = () => {
       </Wrapper>
     </Section>
   );
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 };
 
 export default OpenPositions;

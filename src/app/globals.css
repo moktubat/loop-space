@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 @font-face {
   font-family: "HelveticaNowText";
   src: url("/font/helvetica/helvetica-regular.ttf") format("truetype");
@@ -14,11 +10,6 @@
 
 :root {
   --font-family-helvetica: "HelveticaNowText", sans-serif;
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   --breakpoint-sm: 480px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
@@ -31,12 +22,8 @@
 
 .text-urbanist {
   font-family: var(--font-urbanist);
-<<<<<<< HEAD
-}
-=======
 }
 
 .text-year {
   font-size: calc(440 / 1440 * 100vw);
 }
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937

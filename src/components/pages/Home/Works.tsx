@@ -1,23 +1,17 @@
 "use client";
 
+import { useRef, useLayoutEffect } from "react";
 import styled from "styled-components";
-import Image from "next/image";
 import { Heading } from "@/components/ui/Heading";
 
 import { container, sectionSpacing } from "@/styles/mixins";
 import { bodyText } from "@/styles/typography";
-import { COLORS, FONT } from "@/styles/variables";
-import { BREAKPOINTS } from "@/styles/variables";
+import { COLORS, FONT, BREAKPOINTS } from "@/styles/variables";
 
-import workImg1 from "@/assets/workImg1.webp";
-import workImg2 from "@/assets/workImg2.webp";
-import workImg3 from "@/assets/workImg3.webp";
-import workImg4 from "@/assets/workImg4.webp";
-<<<<<<< HEAD
-=======
-import workImg5 from "@/assets/workImg4.webp";
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
-import { TextLink } from "@/components/ui/TextLink";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /* Styled Components */
 
@@ -55,54 +49,6 @@ const Description = styled.p`
   margin: 0;
 `;
 
-<<<<<<< HEAD
-const WorksGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 48px 24px;
-
-  @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-template-columns: 1fr;
-    gap: 32px 0;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    gap: 24px 0;
-  }
-`;
-
-const GridItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
-
-const ImageWrapper = styled.div`
-  width: 100%;
-  height: 500px;
-  position: relative;
-
-  @media (max-width: ${BREAKPOINTS.md}px) {
-    height: 420px;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    height: 320px;
-  }
-`;
-
-const InfoWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
-`;
-
-const TextWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-=======
 const ProjectsList = styled.div`
   display: flex;
   flex-direction: column;
@@ -115,6 +61,18 @@ const ProjectItem = styled.div`
   align-items: start;
   gap: 24px;
   padding: 32px 0;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    flex-direction: column;
+    gap: 16px;
+    position: relative; /* Needed for DateBadge absolute positioning */
+    padding: 24px 0;
+    border-bottom: 1px solid ${COLORS.subtle};
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 `;
 
 const DateBadge = styled.div`
@@ -125,9 +83,18 @@ const DateBadge = styled.div`
   border-radius: 4px;
   gap: 90px;
 
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    position: absolute;
+    top: 40px;
+    left: 16px;
+    z-index: 2;
+    gap: 8px;
+    background-color: ${COLORS.brandPink};
+    backdrop-filter: none;
+  }
+
   @media (max-width: ${BREAKPOINTS.sm}px) {
     justify-content: center;
-    gap: 8px;
     width: fit-content;
   }
 `;
@@ -137,6 +104,11 @@ const Month = styled.span`
   font-family: ${FONT.urbanist};
   font-size: 16px;
   line-height: 24px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    color: ${COLORS.white};
+  }
+
 `;
 
 const Year = styled.span`
@@ -144,6 +116,10 @@ const Year = styled.span`
   color: ${COLORS.textPrimary};
   font-size: 16px;
   line-height: 24px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    color: ${COLORS.white};
+  }
 `;
 
 const ProjectImage = styled.div`
@@ -153,6 +129,7 @@ const ProjectImage = styled.div`
   border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
 
   img {
     width: 100%;
@@ -162,13 +139,11 @@ const ProjectImage = styled.div`
   }
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    width: 140px;
-    height: 100px;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
     width: 100%;
-    height: 200px;
+    height: 360px;
+    border: none;
+    border-radius: 12px;
+    order: 1; /* 1st on mobile */
   }
 `;
 
@@ -177,6 +152,13 @@ const ProjectInfo = styled.div`
   gap: 24px;
   padding: 20px 0 36px;
   border-top: 1px solid ${COLORS.subtle};
+  flex: 1;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    display: contents; /* Allows children to act as direct children of ProjectItem */
+    padding: 0;
+    border-top: none;
+  }
 `;
 
 const InfoLeft = styled.div`
@@ -185,37 +167,43 @@ const InfoLeft = styled.div`
   justify-content: space-between;
   gap: 24px;
   flex: 1;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    display: contents; /* Unwrap to reorder Title and ActionButton */
+  }
 `;
 
 const InfoRight = styled.div`
-max-width: 338px;
+  max-width: 338px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   flex: 1;
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    max-width: 100%;
+    order: 3; /* 3rd on mobile */
+    gap: 16px;
+  }
 `;
 
 const ProjectTitle = styled.h3`
   font-family: ${FONT.helvetica};
   font-size: 36px;
   font-weight: 400;
-<<<<<<< HEAD
-  line-height: 40px;
-=======
   line-height: 44px;
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   letter-spacing: -2px;
   text-transform: uppercase;
   color: ${COLORS.textPrimary};
   margin: 0;
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-<<<<<<< HEAD
-    font-size: 30px;
-    line-height: 34px;
-=======
     font-size: 20px;
+    line-height: 28px;
+  }
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    order: 2; /* 2nd on mobile */
   }
 `;
 
@@ -238,16 +226,10 @@ const SizeLabel = styled.div`
 
   svg {
     flex-shrink: 0;
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   }
 `;
 
 const ProjectDesc = styled.p`
-<<<<<<< HEAD
-  ${bodyText};
-  color: ${COLORS.textMuted};
-  margin: 0;
-=======
   font-family: ${FONT.urbanist};
   font-size: 16px;
   line-height: 1.5;
@@ -285,6 +267,13 @@ const ActionButton = styled.button`
   svg {
     stroke: #EA2B7B;
   }
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    order: 4; /* 4th on mobile */
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
 `;
 
 const ExploreButton = styled.button`
@@ -314,46 +303,13 @@ const ExploreButton = styled.button`
     width: 100%;
     justify-content: center;
   }
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 `;
-
 
 /* Data */
 
 const projects = [
   {
     id: 1,
-<<<<<<< HEAD
-    title: "Modern Luxe Apartment",
-    description:
-      "A sophisticated retreat featuring sleek furniture, ambient lighting, and a neutral palette with gold accents.",
-    image: workImg1,
-    link: "#",
-  },
-  {
-    id: 2,
-    title: "Cozy Scandinavian Home",
-    description:
-      "A warm, minimalistic space with natural wood elements, soft textures, and a calming pastel scheme.",
-    image: workImg2,
-    link: "#",
-  },
-  {
-    id: 3,
-    title: "Industrial Loft Office",
-    description:
-      "A stylish workspace blending exposed brick walls, metal fixtures, and open-concept design for creativity.",
-    image: workImg3,
-    link: "#",
-  },
-  {
-    id: 4,
-    title: "Elegant Classic Villa",
-    description:
-      "A timeless interior with intricate moldings, rich fabrics, and antique-inspired furnishings for luxury.",
-    image: workImg4,
-    link: "#",
-=======
     month: "Nov",
     year: "2025",
     title: "Modern Luxe Apartment",
@@ -396,70 +352,95 @@ const projects = [
     description: "A modern minimalist home with warm earthy tones and seamless functionality.",
     size: "4290 sqft",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop",
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
   },
 ];
 
 /* Component */
 
 const Works = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useLayoutEffect(() => {
+    if (!sectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+
+      // Desktop: Reveal from top-left corner (smooth transition)
+      mm.add(`(min-width: ${BREAKPOINTS.md + 1}px)`, () => {
+        imageRefs.current.forEach((imgWrapper) => {
+          if (!imgWrapper) return;
+          const img = imgWrapper.querySelector("img");
+          if (!img) return;
+
+          gsap.set(img, {
+            clipPath: "inset(0 100% 100% 0)",
+            filter: "blur(8px)",
+            scale: 1.2
+          });
+
+          gsap.to(img, {
+            clipPath: "inset(0 0% 0% 0%)",
+            filter: "blur(0px)",
+            scale: 1.1,
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: imgWrapper,
+              start: "top 85%",
+              toggleActions: "play none none reverse"
+            }
+          });
+        });
+      });
+
+      // Mobile: Fade up + smooth parallax (Not fast)
+      mm.add(`(max-width: ${BREAKPOINTS.md}px)`, () => {
+        imageRefs.current.forEach((imgWrapper) => {
+          if (!imgWrapper) return;
+          const img = imgWrapper.querySelector("img");
+          if (!img) return;
+
+          // Fade up the wrapper
+          gsap.set(imgWrapper, { opacity: 0, y: 40 });
+          gsap.to(imgWrapper, {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: imgWrapper,
+              start: "top 90%",
+              toggleActions: "play none none reverse"
+            }
+          });
+
+          // Smooth parallax for the inner image
+          gsap.set(img, { yPercent: -10, scale: 1.2 });
+          gsap.to(img, {
+            yPercent: 10,
+            ease: "none",
+            scrollTrigger: {
+              trigger: imgWrapper,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 3 // Higher number = smoother and slower
+            }
+          });
+        });
+      });
+    }, sectionRef);
+
+    ScrollTrigger.refresh();
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <WorksSection>
+    <WorksSection ref={sectionRef}>
       <WorksContainer>
         <IntroBlock>
           <Heading>
-<<<<<<< HEAD
-            Our <span className="highlightTxt">Works</span>
-          </Heading>
-
-          <Description>
-            We take pride in delivering exceptional interior solutions tailored
-            to each client’s preferences. From luxurious residential interiors to
-            functional office spaces.
-          </Description>
-        </IntroBlock>
-
-        <WorksGrid>
-          {projects.map((project) => (
-            <GridItem key={project.id}>
-              <ImageWrapper>
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-              </ImageWrapper>
-
-              <InfoWrapper>
-                <TextWrapper>
-                  <ProjectTitle>{project.title}</ProjectTitle>
-                  <ProjectDesc>{project.description}</ProjectDesc>
-                </TextWrapper>
-                
-                <TextLink variant="pink" href={project.link}>
-                  View Project
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M1 13.5L13.5 1M13.5 1H1M13.5 1V13.5"
-                      stroke="#EA2B7B"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </TextLink>
-              </InfoWrapper>
-            </GridItem>
-          ))}
-        </WorksGrid>
-=======
             OUR <span className="highlightTxt">WORKS</span>
           </Heading>
           <Description>
@@ -468,14 +449,18 @@ const Works = () => {
         </IntroBlock>
 
         <ProjectsList>
-          {projects.map((project) => (
+          {projects.map((project, index) => (
             <ProjectItem key={project.id}>
               <DateBadge>
                 <Month>{project.month}</Month>
                 <Year>{project.year}</Year>
               </DateBadge>
 
-              <ProjectImage>
+              <ProjectImage
+                ref={(el) => {
+                  imageRefs.current[index] = el;
+                }}
+              >
                 <img src={project.image} alt={project.title} />
               </ProjectImage>
 
@@ -509,8 +494,6 @@ const Works = () => {
                 </InfoRight>
 
               </ProjectInfo>
-
-
             </ProjectItem>
           ))}
         </ProjectsList>
@@ -518,10 +501,9 @@ const Works = () => {
         <ExploreButton>
           Explore More
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M5.83331 14.1668L14.1666 5.8335M14.1666 5.8335H5.83331M14.1666 5.8335V14.1668" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M5.83331 14.1668L14.1666 5.8335M14.1666 5.8335H5.83331M14.1666 5.8335V14.1668" stroke="white" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </ExploreButton>
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
       </WorksContainer>
     </WorksSection>
   );

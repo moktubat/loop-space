@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useLayoutEffect } from "react";
 import styled from "styled-components";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -8,14 +8,13 @@ import Image from "next/image";
 
 import { container, sectionSpacing } from "@/styles/mixins";
 import { bodyText } from "@/styles/typography";
-import { COLORS, FONT } from "@/styles/variables";
-import { BREAKPOINTS } from "@/styles/variables";
+import { COLORS, FONT, BREAKPOINTS } from "@/styles/variables";
 
 import { Heading } from "@/components/ui/Heading";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Styled Components */
+/* ---------------- Styled Components ---------------- */
 
 const ProcessSection = styled.section`
   ${sectionSpacing("100px", "100px")}
@@ -52,17 +51,33 @@ const Description = styled.p`
   margin: 0;
 `;
 
+/* Desktop Grid - Unchanged */
 const ProcessGrid = styled.div`
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-template-columns: repeat(2, 1fr);
+    display: none; 
   }
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    grid-template-columns: 1fr;
+`;
+
+/* Mobile Grid - New */
+const MobileProcessGrid = styled.div`
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 32px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    display: flex;
   }
+`;
+
+const MobileStepWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `;
 
 const GridItem = styled.div`
@@ -70,8 +85,9 @@ const GridItem = styled.div`
   aspect-ratio: 1 / 1;
   overflow: hidden;
 
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    aspect-ratio: auto;
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    /* Prevents Next.js Image fill from collapsing to 0 height on mobile */
+    aspect-ratio: 4 / 3; 
   }
 `;
 
@@ -148,14 +164,13 @@ const CornerIcon = styled.div`
   pointer-events: none;
   z-index: 1;
 
-
   svg {
     width: 100%;
     height: 100%;
   }
 `;
 
-/* Data */
+/* ---------------- Data ---------------- */
 
 const steps = [
   {
@@ -208,7 +223,6 @@ const steps = [
   },
 ];
 
-// matching your original layout fully
 const layout = [
   "image", "text",
   "image", "text",
@@ -229,42 +243,116 @@ const animationDirection = [
   "ltr", null
 ];
 
-/* Component */
+/* ---------------- Component ---------------- */
 
 const Process = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  /* Scroll reveals + initial hidden states */
-  useEffect(() => {
+  /* Scroll reveals + initial hidden states (BLINK FIX) */
+  useLayoutEffect(() => {
     if (!sectionRef.current) return;
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 80%",
-        toggleActions: "play none none reverse",
-      },
-    });
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+      const heading = sectionRef.current?.querySelector(".process-heading");
+      const desc = sectionRef.current?.querySelector(".process-desc");
 
-    tl.from(sectionRef.current.querySelector("h2"), { opacity: 0, y: 50, duration: 0.6 })
-      .from(sectionRef.current.querySelector("p"), { opacity: 0, y: 30, duration: 0.5 }, "-=0.3");
+      // Desktop: Hover interactions + directional clip reveals (UNCHANGED)
+      mm.add(`(min-width: ${BREAKPOINTS.md + 1}px)`, () => {
+        // 1. Set initial hidden state BEFORE paint to prevent blinking
+        if (heading) gsap.set(heading, { opacity: 0, y: 50 });
+        if (desc) gsap.set(desc, { opacity: 0, y: 30 });
 
-    // prepare all image reveal clipPaths
-    imageRefs.current.forEach((img, i) => {
-      if (!img || layout[i] !== "image") return;
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        });
 
-      const dir = animationDirection[i];
-      gsap.set(img, {
-        clipPath: dir === "rtl"
-          ? "inset(0 100% 0 0)"
-          : "inset(0 0 0 100%)",
-        filter: "blur(10px)"
+        if (heading) {
+          tl.to(heading, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" });
+        }
+        if (desc) {
+          tl.to(desc, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, "-=0.3");
+        }
+
+        // Prepare all image reveal clipPaths
+        imageRefs.current.forEach((img, i) => {
+          if (!img || layout[i] !== "image") return;
+          const dir = animationDirection[i];
+          gsap.set(img, {
+            clipPath: dir === "rtl" ? "inset(0 100% 0 0)" : "inset(0 0 0 100%)",
+            filter: "blur(10px)",
+          });
+        });
       });
-    });
+
+      // Mobile: No hover, images always visible, little bit smooth parallax
+      mm.add(`(max-width: ${BREAKPOINTS.md}px)`, () => {
+        if (heading && desc) {
+          gsap.set([heading, desc], { opacity: 0, y: 30 });
+
+          gsap.to([heading, desc], {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        }
+
+        // Parallax effect for mobile images
+        const mobileImages = sectionRef.current?.querySelectorAll(".mobile-process-image");
+        if (mobileImages) {
+          mobileImages.forEach((wrapper) => {
+            // Subtle fade up for the wrapper
+            gsap.set(wrapper, { opacity: 0, y: 40 });
+            gsap.to(wrapper, {
+              opacity: 1,
+              y: 0,
+              duration: 1.2,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: wrapper,
+                start: "top 85%",
+                toggleActions: "play none none reverse"
+              }
+            });
+
+            // Smooth Parallax for the inner image (not fast)
+            const innerImg = wrapper.querySelector("img");
+            if (innerImg) {
+              gsap.set(innerImg, { yPercent: -8, scale: 1.15 });
+              gsap.to(innerImg, {
+                yPercent: 8,
+                scale: 1.15,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: wrapper,
+                  start: "top bottom",
+                  end: "bottom top",
+                  scrub: 3 // smooth and not fast
+                }
+              });
+            }
+          });
+        }
+      });
+    }, sectionRef);
+
+    ScrollTrigger.refresh();
+    return () => ctx.revert();
   }, []);
 
-  /* Hover handlers — unchanged behavior */
+  /* Hover handlers */
   const revealImage = (textIndex: number) => {
     const stepIndex = stepMap[textIndex];
     const imageIndex = layout.findIndex(
@@ -296,9 +384,7 @@ const Process = () => {
     const dir = animationDirection[imageIndex];
 
     gsap.to(img, {
-      clipPath: dir === "rtl"
-        ? "inset(0 100% 0 0)"
-        : "inset(0 0 0 100%)",
+      clipPath: dir === "rtl" ? "inset(0 100% 0 0)" : "inset(0 0 0 100%)",
       filter: "blur(10px)",
       duration: 0.8,
       ease: "power3.in",
@@ -309,41 +395,45 @@ const Process = () => {
     <ProcessSection ref={sectionRef}>
       <ProcessContainer>
         <IntroBlock>
-          <Heading color={COLORS.white}>
+          <Heading className="process-heading" color={COLORS.white}>
             Design <span className="highlightTxt">Process</span>
           </Heading>
 
-          <Description>
+          <Description className="process-desc">
             Our structured design process ensures a seamless experience from
             concept to completion. We begin with a consultation to understand
             your vision.
           </Description>
         </IntroBlock>
 
+        {/* DESKTOP GRID - UNCHANGED */}
         <ProcessGrid>
           {layout.map((item, index) => {
             const step = steps[stepMap[index]];
 
             return (
               <div key={index} style={{ position: "relative" }}>
-                {/* ICON ABOVE ALL GRID CELLS */}
                 {[0, 1, 2, 4, 5, 6].includes(index) && (
                   <CornerIcon>
-                    <svg xmlns="http://www.w3.org/2000/svg"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="#FFF"
-                      strokeWidth="1">
+                      strokeWidth="1"
+                    >
                       <path d="M12 6v12m6-6H6" />
                     </svg>
-
-
                   </CornerIcon>
                 )}
 
                 <GridItem>
                   {item === "image" ? (
-                    <ImageWrapper ref={(el) => (imageRefs.current[index] = el)}>
+                    <ImageWrapper
+                      ref={(el) => {
+                        imageRefs.current[index] = el;
+                      }}
+                    >
                       <Image
                         src={step.image}
                         alt={step.title}
@@ -368,6 +458,33 @@ const Process = () => {
             );
           })}
         </ProcessGrid>
+
+        {/* MOBILE GRID - NEW LAYOUT */}
+        <MobileProcessGrid>
+          {steps.map((step) => (
+            <MobileStepWrapper key={step.id}>
+              <GridItem>
+                <ImageWrapper className="mobile-process-image">
+                  <Image
+                    src={step.image}
+                    alt={step.title}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </ImageWrapper>
+              </GridItem>
+              <GridItem>
+                <InfoWrapper>
+                  <StepNumber>{step.number}</StepNumber>
+                  <TextContainer>
+                    <StepTitle>{step.title}</StepTitle>
+                    <StepDesc>{step.description}</StepDesc>
+                  </TextContainer>
+                </InfoWrapper>
+              </GridItem>
+            </MobileStepWrapper>
+          ))}
+        </MobileProcessGrid>
       </ProcessContainer>
     </ProcessSection>
   );

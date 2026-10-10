@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
@@ -29,6 +29,13 @@ import customImg2 from "@/assets/customImg2.webp";
 const Section = styled.section`
   background: #f9fafb;
   padding: 100px 16px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding: 60px 16px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding: 40px 16px;
+  }
 `;
 
 const Wrapper = styled.div`
@@ -72,7 +79,7 @@ const ServiceItem = styled.div`
   gap: 70px;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    flex-direction: column;
+    flex-direction: column !important; /* Overrides inline style reverse */
     gap: 40px;
   }
 `;
@@ -84,20 +91,18 @@ const ServiceContent = styled.div`
   gap: 12px;
 
   h3 {
-  font-family: ${FONT.helvetica};
-  font-size: 48px;
-  font-weight: 400;
-  letter-spacing: -0.96px;
-  text-transform: uppercase;
-  margin: 0;
-  color: #1d1f2c;
-  transform: none !important;   /* ensures hover removed */
-  transition: none !important;
+    font-family: ${FONT.helvetica};
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -0.96px;
+    text-transform: uppercase;
+    margin: 0;
+    color: #1d1f2c;
 
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    font-size: 32px;
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 28px;
+    }
   }
-}
 
   p {
     font-family: ${FONT.urbanist};
@@ -105,6 +110,11 @@ const ServiceContent = styled.div`
     line-height: 28px;
     color: #595b68;
     margin: 0;
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 16px;
+      line-height: 24px;
+    }
   }
 `;
 
@@ -113,6 +123,10 @@ const BulletList = styled.div`
   flex-direction: column;
   gap: 16px;
   margin-top: 50px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    margin-top: 32px;
+  }
 `;
 
 const Bullet = styled.div`
@@ -128,40 +142,63 @@ const Bullet = styled.div`
     width: 100%;
     background: #9da7b8;
   }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 18px;
+    gap: 8px;
+  }
 `;
 
 const ServiceImages = styled.div`
   flex: 1;
   display: flex;
   gap: 24px;
+  
+  /* Fix for tablet/mobile to prevent overflow */
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    width: 100%;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    flex-direction: column;
+  }
 `;
 
 const ImgTall = styled(Image)`
-  width: 306px;
+  width: 100%;
+  max-width: 306px;
   height: 452px;
   object-fit: cover;
-  transition: 0.4s ease;
 
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    flex: 1;
+    height: 320px;
+  }
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    width: 100%;
+    max-width: 100%;
     height: auto;
+    aspect-ratio: 306 / 452;
   }
 `;
 
 const ImgWide = styled(Image)`
-  width: 306px;
+  width: 100%;
+  max-width: 306px;
   height: 288px;
   object-fit: cover;
-  transition: 0.4s ease;
 
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    flex: 1;
+    height: 320px;
+  }
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    width: 100%;
+    max-width: 100%;
     height: auto;
+    aspect-ratio: 306 / 288;
   }
 `;
 
 /* -------------------------------------------------------
-   DATA (Cleaner & Shorter)
+   DATA
 ------------------------------------------------------- */
 const servicesData = [
   {
@@ -222,57 +259,54 @@ const servicesData = [
    COMPONENT
 ------------------------------------------------------- */
 export default function ServicesOffered() {
-  const sectionRefs = useRef([]);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement[]>([]);
 
-  const addRef = (el) => {
-    if (el && !sectionRefs.current.includes(el)) {
-      sectionRefs.current.push(el);
-    }
-  };
+  useLayoutEffect(() => {
+    if (!sectionRef.current) return;
 
-  useEffect(() => {
-    // Fade + slide up for the whole section
-    gsap.from(sectionRefs.current, {
-      opacity: 0,
-      y: 60,
-      duration: 1.2,
-      stagger: 0.3,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: sectionRefs.current[0],
-        start: "top 85%",
-      },
-    });
+    const ctx = gsap.context(() => {
+      // Fade + slide up for the whole section
+      gsap.from(itemsRef.current, {
+        opacity: 0,
+        y: 60,
+        duration: 1.2,
+        stagger: 0.3,
+        ease: "power3.out",
+        immediateRender: false, // Prevents blinking
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+        },
+      });
 
-    // Smooth top-to-bottom reveal for images
-    const images = gsap.utils.toArray<HTMLImageElement>(".reveal-img");
-    images.forEach((img) => {
-      gsap.fromTo(
-        img,
-        { clipPath: "inset(0 0 100% 0)" }, // start fully hidden
-        {
-          clipPath: "inset(0 0 0% 0)",     // end fully revealed
-          duration: 1.4,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: img,
-            start: "top 90%",
-            toggleActions: "play none none none",
-          },
-        }
-      );
-    });
+      // Smooth top-to-bottom reveal for images
+      const images = gsap.utils.toArray<HTMLImageElement>(".reveal-img");
+      images.forEach((img) => {
+        gsap.fromTo(
+          img,
+          { clipPath: "inset(0 0 100% 0)" }, // start fully hidden
+          {
+            clipPath: "inset(0 0 0% 0)",     // end fully revealed
+            duration: 1.4,
+            ease: "power3.out",
+            immediateRender: false, // Prevents blinking
+            scrollTrigger: {
+              trigger: img,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      });
+    }, sectionRef);
 
-    // Cleanup on unmount
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
+    ScrollTrigger.refresh();
+    return () => ctx.revert();
   }, []);
 
-
-
   return (
-    <Section>
+    <Section ref={sectionRef}>
       <Wrapper>
         <Intro>
           <Heading>
@@ -288,7 +322,11 @@ export default function ServicesOffered() {
 
         <ServiceGroup>
           {servicesData.map((service, i) => (
-            <ServiceItem key={i} ref={addRef} style={{ flexDirection: service.reverse ? "row-reverse" : "row" }}>
+            <ServiceItem
+              key={i}
+              ref={(el) => { if (el) itemsRef.current[i] = el; }}
+              style={{ flexDirection: service.reverse ? "row-reverse" : "row" }}
+            >
               <ServiceContent>
                 <h3>{service.title}</h3>
                 <p>{service.desc}</p>

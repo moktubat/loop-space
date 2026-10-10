@@ -35,6 +35,13 @@ const TestimonialsContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 64px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    gap: 48px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    gap: 32px;
+  }
 `;
 
 const IntroBlock = styled.div`
@@ -65,6 +72,7 @@ const Item = styled.div`
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
     flex: 0 0 100%;
+    padding: 20px;
   }
 `;
 
@@ -81,6 +89,11 @@ const Title = styled.h3`
   font-weight: 600;
   line-height: 36px;
   margin: 0;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 24px;
+    line-height: 30px;
+  }
 `;
 
 const Review = styled.p`
@@ -88,18 +101,35 @@ const Review = styled.p`
   font-family: ${FONT.urbanist};
   font-size: 20px;
   line-height: 28px;
+  margin: 0;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 16px;
+    line-height: 24px;
+  }
 `;
 
 const Divider = styled.hr`
   border: 0;
   border-top: 1px solid #e4e6e9;
   margin: 24px 0;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    margin: 16px 0;
+  }
 `;
 
 const ReviewerRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
 `;
 
 const ReviewerLeft = styled.div`
@@ -109,8 +139,6 @@ const ReviewerLeft = styled.div`
 `;
 
 const ReviewerImage = styled(Image)`
-  width: 60px;
-  height: 60px;
   border-radius: 50%;
   object-fit: cover;
 `;
@@ -126,6 +154,11 @@ const ReviewerName = styled.span`
   font-size: 24px;
   font-weight: 600;
   line-height: 32px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 18px;
+    line-height: 24px;
+  }
 `;
 
 const ReviewerDesignation = styled.span`
@@ -141,6 +174,13 @@ const LogoWrapper = styled.div`
     width: 140px !important;
     height: 42px !important;
     object-fit: contain;
+  }
+  
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    img {
+      width: 110px !important;
+      height: 33px !important;
+    }
   }
 `;
 
@@ -208,13 +248,14 @@ const testimonials = [
 
 const Testimonials = () => {
   const trackRef = useRef<HTMLDivElement>(null);
+  const total = testimonials.length;
+  const indexRef = useRef(total); // Track index in a ref for resize events
 
   const looped = useMemo(
     () => [...testimonials, ...testimonials, ...testimonials],
     []
   );
 
-  const total = testimonials.length;
   const [index, setIndex] = useState(total); // Start at middle set
   const [isBusy, setIsBusy] = useState(false);
 
@@ -236,11 +277,13 @@ const Testimonials = () => {
         if (i >= total * 2) {
           const reset = i - total;
           setIndex(reset);
+          indexRef.current = reset;
           gsap.set(trackRef.current, { x: -reset * move });
         }
         if (i < total) {
           const reset = i + total;
           setIndex(reset);
+          indexRef.current = reset;
           gsap.set(trackRef.current, { x: -reset * move });
         }
       },
@@ -248,7 +291,26 @@ const Testimonials = () => {
   };
 
   useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+
+  useEffect(() => {
     requestAnimationFrame(() => slideTo(index, 0));
+
+    // Handle responsive resizing
+    const handleResize = () => {
+      if (!trackRef.current) return;
+      const item = trackRef.current.children[0] as HTMLElement;
+      if (!item) return;
+      const move = item.offsetWidth + 24;
+
+      gsap.killTweensOf(trackRef.current); // Stop ongoing animation
+      gsap.set(trackRef.current, { x: -indexRef.current * move });
+      setIsBusy(false); // Unlock if it was busy
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
 
@@ -290,7 +352,8 @@ const Testimonials = () => {
 
                 <ReviewerRow>
                   <ReviewerLeft>
-                    <ReviewerImage src={t.image} alt={t.reviewer} />
+                    {/* Added explicit width/height for Next.js Image */}
+                    <ReviewerImage src={t.image} alt={t.reviewer} width={60} height={60} />
                     <ReviewerInfo>
                       <ReviewerName>{t.reviewer}</ReviewerName>
                       <ReviewerDesignation>

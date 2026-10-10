@@ -1,5 +1,6 @@
 "use client";
 
+import { useLayoutEffect, useRef } from "react";
 import styled from "styled-components";
 import Image from "next/image";
 import { Heading } from "@/components/ui/Heading";
@@ -8,13 +9,12 @@ import { COLORS, FONT } from "@/styles/variables";
 import { BREAKPOINTS } from "@/styles/variables";
 
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import member1 from "@/assets/member1.webp";
 import member2 from "@/assets/member2.webp";
 import member3 from "@/assets/member3.webp";
 import member4 from "@/assets/member4.webp";
-import { useEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,6 +23,13 @@ gsap.registerPlugin(ScrollTrigger);
 const TeamSection = styled.section`
   background-color: #F9FAFB;
   padding: 100px 16px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding: 60px 16px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding: 40px 16px;
+  }
 `;
 
 const TeamContainer = styled.div`
@@ -55,6 +62,12 @@ const MemberCard = styled.div`
   gap: 24px;
   border-radius: 12px;
   align-items: flex-start;
+
+  /* Fix responsive layout: stack image above text on mobile */
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    flex-direction: column;
+    gap: 16px;
+  }
 `;
 
 const MemberImageWrapper = styled.div`
@@ -62,10 +75,14 @@ const MemberImageWrapper = styled.div`
   height: 420px;
   position: relative;
   flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 8px; /* Added slight rounding to images */
 
+  /* Fix Next.js Image fill collapsing on mobile */
   @media (max-width: ${BREAKPOINTS.md}px) {
     width: 100%;
     height: auto;
+    aspect-ratio: 4 / 3; 
   }
 `;
 
@@ -74,6 +91,11 @@ const InfoWrapper = styled.div`
   flex-direction: column;
   align-self: center;
   gap: 12px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    align-self: flex-start;
+    padding: 0 8px;
+  }
 `;
 
 const MemberDesignation = styled.p`
@@ -82,6 +104,11 @@ const MemberDesignation = styled.p`
   font-weight: 400;
   line-height: 28px;
   color: #595B68;
+  margin: 0;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 16px;
+  }
 `;
 
 const MemberName = styled.h4`
@@ -90,17 +117,27 @@ const MemberName = styled.h4`
   font-weight: 400;
   line-height: 120%;
   color: #1D1F2C;
-  margin-bottom: 36px;
+  margin: 0 0 24px 0;
+
+  /* Fix oversized text on mobile */
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
 `;
 
 const SocialRow = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 12px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    gap: 8px;
+  }
 `;
 
 const SocialIcon = styled.a`
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   background: ${COLORS.white};
   display: flex;
   align-items: center;
@@ -116,13 +153,23 @@ const SocialIcon = styled.a`
   }
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     fill: #595B68;
   }
 
   &:hover svg {
     fill: ${COLORS.white};
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    width: 36px;
+    height: 36px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 
@@ -190,30 +237,54 @@ const members = [
 /* Team Component */
 
 const Team = () => {
-    const cardsRef = useRef<HTMLDivElement[]>([]);
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
-    useEffect(() => {
-        cardsRef.current.forEach((card, i) => {
-            gsap.from(card, {
-                opacity: 0,
-                y: 50,
-                duration: 1,
-                delay: i * 0.2,
-                ease: "power3.out",
-                scrollTrigger: {
-                    trigger: card,
-                    start: "top 80%",
-                },
+    useLayoutEffect(() => {
+        if (!sectionRef.current) return;
+
+        const ctx = gsap.context(() => {
+            const intro = sectionRef.current?.querySelector(".intro-animate");
+
+            // Animate Intro
+            if (intro) {
+                gsap.fromTo(intro,
+                    { opacity: 0, y: 30 },
+                    { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", immediateRender: false, scrollTrigger: { trigger: intro, start: "top 85%" } }
+                );
+            }
+
+            // Animate Cards
+            cardsRef.current.forEach((card, i) => {
+                if (!card) return;
+                gsap.fromTo(card,
+                    { opacity: 0, y: 50 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 1,
+                        delay: i * 0.15,
+                        ease: "power3.out",
+                        immediateRender: false, // Prevents blinking
+                        scrollTrigger: {
+                            trigger: card,
+                            start: "top 85%",
+                        },
+                    }
+                );
             });
-        });
+        }, sectionRef);
+
+        ScrollTrigger.refresh();
+        return () => ctx.revert();
     }, []);
 
     return (
-        <TeamSection>
+        <TeamSection ref={sectionRef}>
             <TeamContainer>
                 <IntroBlock>
                     <Heading className="intro-animate">
-                        Our <span className="highlightTxt">Story</span>
+                        Our <span className="highlightTxt">Team</span>
                     </Heading>
                 </IntroBlock>
 

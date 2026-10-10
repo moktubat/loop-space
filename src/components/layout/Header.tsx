@@ -87,21 +87,6 @@ const NavLink = styled.a`
 `;
 
 const ContactButton = styled.a`
-<<<<<<< HEAD
-  font-family: ${FONT.urbanist};
-  font-size: 16px;
-  font-weight: 500;
-  padding: 8px 20px;
-  color: ${COLORS.white};
-  background: ${COLORS.brandPink};
-  border-radius: 4px;
-  text-decoration: none;
-  transition: background 0.3s ease;
-
-  &:hover {
-    background: ${COLORS.brandPinkHover};
-  }
-=======
   background: #EA2B7B;
   border-radius: 6px;
   padding: 8px 16px;
@@ -117,7 +102,6 @@ const ContactButton = styled.a`
   line-height: 24px;
 
   cursor: pointer;
->>>>>>> 41df2574fabb2893cdc14f4cc32b02383b27d937
 `;
 
 const MenuButton = styled.button`

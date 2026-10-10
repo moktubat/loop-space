@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Heading } from "@/components/ui/Heading";
 import { container } from "@/styles/mixins";
 import { bodyText } from "@/styles/typography";
@@ -16,8 +16,12 @@ import workImg6 from "@/assets/workImg6.webp";
 import workImg7 from "@/assets/workImg7.webp";
 import workImg8 from "@/assets/workImg8.webp";
 
-import { TextLink } from "@/components/ui/TextLink";
 import Image from "next/image";
+
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /* ------------------------------------------------------------------ */
 /*                            STYLED COMPONENTS                       */
@@ -26,13 +30,17 @@ import Image from "next/image";
 const WorksSection = styled.section`
   background-color: #F9FAFB;
   padding: 100px 16px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding: 60px 16px;
+  }
 `;
 
 const WorksContainer = styled.div`
   ${container}
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 64px;
 `;
 
 const IntroBlock = styled.div`
@@ -49,101 +57,128 @@ const DescriptionText = styled.p`
   margin: 0;
 `;
 
-const FadeWrapper = styled.div`
-  opacity: ${(p) => (p.$visible ? 1 : 0)};
-  transition: opacity 0.5s ease;
-  will-change: opacity;
-`;
-
 const WorksGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 48px 24px;
+  gap: 32px;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
     grid-template-columns: 1fr;
-    gap: 32px 0;
   }
 `;
 
-const GridItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.8s ease forwards;
-  animation-play-state: ${(p) => (p.$play ? "running" : "paused")};
-  animation-delay: ${(p) => p.$delay || 0}s;
-
-  @keyframes fadeUp {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const ImageWrapper = styled.div`
-  width: 100%;
-  height: 500px;
+/* Card Wrapper - Handles Full vs Half Width */
+const CardWrapper = styled.div<{
+  $isFull: boolean;
+  $isMinimal?: boolean;
+}>`
   position: relative;
   overflow: hidden;
+  grid-column: ${(p) => (p.$isFull ? "span 2" : "span 1")};
+  height: 600px;
+  cursor: pointer;
+  background: #000;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    height: 420px;
+    grid-column: span 2;
+    height: 450px;
   }
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    height: 320px;
+    height: 350px;
   }
+
+  ${(p) =>
+    p.$isMinimal &&
+    `
+      ${BottomContent} {
+        justify-content: center;
+        align-items: center;
+      }
+
+      ${ProjectInfo} {
+        align-items: center;
+        text-align: center;
+      }
+    `}
 `;
 
-const Mask = styled.div`
+const ImageMask = styled.div`
   position: absolute;
   inset: 0;
-  background: white;
-  transform: translateX(0%);
-  animation: maskSlide 0.9s cubic-bezier(0.77, 0, 0.175, 1) forwards;
-  animation-play-state: ${(p) => (p.$play ? "running" : "paused")};
-  animation-delay: ${(p) => p.$delay || 0}s;
-  z-index: 5;
-
-  @keyframes maskSlide {
-    0% {
-      transform: translateX(0%);
-    }
-    100% {
-      transform: translateX(101%);
-    }
+  z-index: 1;
+  img {
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   }
 `;
 
-const ImageInner = styled.div`
-  width: 100%;
-  height: 100%;
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+`;
+
+const DiscoverButton = styled.button`
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: ${COLORS.white};
+  color: ${COLORS.brandPink};
+  border: 2px solid ${COLORS.brandPink};
+  border-bottom: 4px solid ${COLORS.brandPink};
+  padding: 12px 32px;
+  font-family: ${FONT.urbanist};
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
   opacity: 0;
-  animation: imgFade 0.9s ease forwards;
-  animation-play-state: ${(p) => (p.$play ? "running" : "paused")};
-  animation-delay: ${(p) => (p.$delay ? p.$delay + 0.1 : 0.1)}s;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 5;
+  white-space: nowrap;
 
-  @keyframes imgFade {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+  ${CardWrapper}:hover & {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 `;
 
-const InfoWrapper = styled.div`
+const BottomContent = styled.div`
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  right: 40px;
+  z-index: 4;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    gap: 12px;
+  }
 `;
 
-const TextWrapper = styled.div`
+const DateBadge = styled.div`
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: ${COLORS.white};
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: ${FONT.urbanist};
+  font-size: 14px;
   display: flex;
-  flex-direction: column;
   gap: 8px;
 `;
 
@@ -154,147 +189,115 @@ const ProjectTitle = styled.h3`
   line-height: 40px;
   letter-spacing: -2px;
   text-transform: uppercase;
-  color: ${COLORS.textPrimary};
+  color: ${COLORS.white};
   margin: 0;
-`;
 
-const ProjectDesc = styled.p`
-  ${bodyText};
-  color: ${COLORS.textMuted};
-  margin: 0;
-`;
-
-const PaginationWrapper = styled.div`
-  margin-top: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-`;
-
-const ArrowButton = styled.button`
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  transition: background 0.25s ease, transform 0.25s ease;
-
-  &:hover:not(:disabled) {
-    background: #EA2B7B;
-  }
-
-  &:disabled {
-    opacity: 0.4;
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 24px;
+    line-height: 28px;
   }
 `;
 
-const PageNumber = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "active",
-})`
-  width: 44px;
-  height: 44px;
-  border: 2px solid #EA2B7B;
-  background: ${(p) => (p.active ? "#EA2B7B" : "#FFF")};
-  color: ${(p) => (p.active ? "#FFF" : "#EA2B7B")};
-  font-family: Urbanist;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  cursor: pointer;
+const ProjectInfo = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 24px;
+  color: ${COLORS.white};
+  font-family: ${FONT.urbanist};
+  font-size: 16px;
+  font-weight: 500;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 13px;
+    gap: 12px;
+  }
 `;
 
 /* ------------------------------------------------------------------ */
 /*                              DATA                                  */
 /* ------------------------------------------------------------------ */
 
-const projects = [
-  { id: 1, title: "Modern Luxe Apartment", description: "A sophisticated retreat featuring sleek furniture, ambient lighting, and a neutral palette with gold accents.", image: workImg1, link: "#" },
-  { id: 2, title: "Cozy Scandinavian Home", description: "A warm, minimalistic space with natural wood elements, soft textures, and a calming pastel scheme.", image: workImg2, link: "#" },
-  { id: 3, title: "Industrial Loft Office", description: "A stylish workspace blending exposed brick walls, metal fixtures, and open-concept design for creativity.", image: workImg3, link: "#" },
-  { id: 4, title: "Elegant Classic Villa", description: "A timeless interior with intricate moldings, rich fabrics, and antique-inspired furnishings for luxury.", image: workImg4, link: "#" },
-  { id: 5, title: "Serene Haven Residence", description: "A modern minimalist home with warm, earthy tones and seamless functionality.", image: workImg5, link: "#" },
-  { id: 6, title: "Modern Zen Apartment", description: "A tranquil living space inspired by Japanese simplicity and balance.", image: workImg6, link: "#" },
-  { id: 7, title: "Opulent Living Penthouse", description: "A high-end penthouse featuring luxurious textures and panoramic views.", image: workImg7, link: "#" },
-  { id: 8, title: "Boutique Chic Café", description: "A stylish café with cozy aesthetics and Instagram-worthy interiors.", image: workImg8, link: "#" },
+interface ProjectData {
+  id: number;
+  month: string;
+  year: string;
+  title: string;
+  location: string;
+  size: string;
+  image: string;
+  link: string;
+}
+
+const projects: ProjectData[] = [
+  { id: 1, month: "Nov", year: "2025", title: "Modern Luxe Apartment", location: "New York", size: "2450 sqft", image: workImg1.src, link: "#" },
+  { id: 2, month: "Jul", year: "2025", title: "Cozy Scandinavian Home", location: "Stockholm", size: "1770 sqft", image: workImg2.src, link: "#" },
+  { id: 3, month: "May", year: "2025", title: "Industrial Loft Office", location: "Berlin", size: "6000 sqft", image: workImg3.src, link: "#" },
+  { id: 4, month: "Feb", year: "2025", title: "Opulent Living Penthouse", location: "Miami", size: "2840 sqft", image: workImg4.src, link: "#" },
+  { id: 5, month: "Jan", year: "2025", title: "Serene Haven Residence", location: "Kyoto", size: "4290 sqft", image: workImg5.src, link: "#" },
+  { id: 6, month: "Dec", year: "2024", title: "Boutique Chic Café", location: "Paris", size: "1200 sqft", image: workImg6.src, link: "#" },
+  { id: 7, month: "Oct", year: "2024", title: "Minimalist Urban Studio", location: "Tokyo", size: "800 sqft", image: workImg7.src, link: "#" },
+  { id: 8, month: "Aug", year: "2024", title: "Rustic Country House", location: "Tuscany", size: "3200 sqft", image: workImg8.src, link: "#" },
 ];
-
-/* ------------------------------------------------------------------ */
-/*                         PAGINATION LOGIC                           */
-/* ------------------------------------------------------------------ */
-
-const getPaginationNumbers = (total, current) => {
-  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 3) return [1, 2, 3, "...", total];
-  if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
-  return [1, "...", current - 1, current, current + 1, "...", total];
-};
 
 /* ------------------------------------------------------------------ */
 /*                             COMPONENT                              */
 /* ------------------------------------------------------------------ */
 
 const Works = () => {
-  const ITEMS_PER_PAGE = 4;
-  const totalPages = Math.ceil(projects.length / ITEMS_PER_PAGE);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isVisible, setIsVisible] = useState(false);
-  const [playAnimation, setPlayAnimation] = useState(false);
+  // GSAP Animation Logic
+  useLayoutEffect(() => {
+    if (!sectionRef.current) return;
 
-  const sectionRef = useRef(null);
+    const ctx = gsap.context(() => {
+      // Animate Cards
+      const cards = gsap.utils.toArray(".work-card");
+      gsap.set(cards, { opacity: 0, y: 50 });
+      gsap.to(cards, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        stagger: 0.1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 70%",
+          toggleActions: "play none none reverse"
+        }
+      });
 
-  /* --- TRIGGER WHEN ENTERS VIEWPORT --- */
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            setPlayAnimation(true);
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
+      // Animate Image Masks
+      const imgMasks = gsap.utils.toArray(".work-img-mask");
+      gsap.set(imgMasks, { clipPath: "inset(0 0 100% 0)" });
+      gsap.to(imgMasks, {
+        clipPath: "inset(0 0 0% 0)",
+        duration: 1.2,
+        stagger: 0.1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 70%",
+          toggleActions: "play none none reverse"
+        }
+      });
+    }, sectionRef);
 
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
+    ScrollTrigger.refresh();
+    return () => ctx.revert();
   }, []);
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const displayedProjects = projects.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const goToPage = (page) => {
-    if (page < 1 || page > totalPages) return;
-
-    setIsVisible(false);
-    setPlayAnimation(false);
-
-    setTimeout(() => {
-      setCurrentPage(page);
-
-      const sectionTop = sectionRef.current?.offsetTop || 0;
-      window.scrollTo({ top: sectionTop, behavior: "smooth" });
-
-      setIsVisible(true);
-      setPlayAnimation(true);
-    }, 500);
-  };
 
   return (
     <WorksSection id="works-section" ref={sectionRef}>
       <WorksContainer>
-
         <IntroBlock>
           <Heading>
             Our <span className="highlightTxt">Works</span>
@@ -305,94 +308,53 @@ const Works = () => {
           </DescriptionText>
         </IntroBlock>
 
-        <FadeWrapper $visible={isVisible}>
-          <WorksGrid>
-            {displayedProjects.map((project, index) => (
-              <GridItem
-                key={project.id}
-                $delay={index * 0.15}
-                $play={playAnimation}
-              >
-                <ImageWrapper>
-                  <Mask $delay={index * 0.15} $play={playAnimation} />
-                  <ImageInner $delay={index * 0.15} $play={playAnimation}>
-                    <Image
-                      src={project.image}
-                      alt={project.title}
-                      fill
-                      style={{ objectFit: "cover" }}
-                    />
-                  </ImageInner>
-                </ImageWrapper>
-
-                <InfoWrapper>
-                  <TextWrapper>
-                    <ProjectTitle>{project.title}</ProjectTitle>
-                    <ProjectDesc>{project.description}</ProjectDesc>
-                  </TextWrapper>
-
-                  <TextLink variant="pink" href={project.link}>
-                    View Project
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                      <path d="M1 13.5L13.5 1M13.5 1H1M13.5 1V13.5" stroke="#EA2B7B" strokeWidth="2" />
-                    </svg>
-                  </TextLink>
-                </InfoWrapper>
-
-              </GridItem>
-            ))}
-          </WorksGrid>
-        </FadeWrapper>
-
-        {/* Pagination */}
-        <PaginationWrapper>
-
-          {/* Left Arrow */}
-          <ArrowButton onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
-            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-              <rect x="1" y="1" width="42" height="42" fill="white" />
-              <rect x="1" y="1" width="42" height="42" stroke="#EA2B7B" strokeWidth="2" />
-              <path d="M25 29.5L17.5 22L25 14.5V29.5Z" fill="#EA2B7B" />
-            </svg>
-          </ArrowButton>
-
-          {getPaginationNumbers(totalPages, currentPage).map((item, idx) => {
-            if (item === "...") {
-              return (
-                <span
-                  key={idx}
-                  style={{
-                    width: 44,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    color: "#EA2B7B",
-                    fontFamily: "Urbanist",
-                    fontSize: "22px",
-                  }}
-                >
-                  …
-                </span>
-              );
-            }
+        <WorksGrid>
+          {projects.map((project, index) => {
+            // Pattern logic: 3 full, 2 half, 3 full, 2 half...
+            const isFullWidth = index % 5 < 3;
+            const isMinimal = project.id === 4 || project.id === 5;
 
             return (
-              <PageNumber key={idx} active={currentPage === item} onClick={() => goToPage(item)}>
-                {item}
-              </PageNumber>
+              <CardWrapper
+                key={project.id}
+                className="work-card"
+                $isFull={isFullWidth}
+                $isMinimal={isMinimal}
+              >
+                <ImageMask className="work-img-mask">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
+                </ImageMask>
+
+                <GradientOverlay />
+
+                <DiscoverButton>Discover</DiscoverButton>
+
+                <BottomContent>
+                  <ProjectInfo>
+                    <DateBadge>
+                      <span>{project.month}</span>
+                      <span>{project.year}</span>
+                    </DateBadge>
+
+                    <ProjectTitle>{project.title}</ProjectTitle>
+                  </ProjectInfo>
+
+                  {!isMinimal && (
+                    <InfoRow>
+                      <span>Location: {project.location}</span>
+                      <span>Surface: {project.size}</span>
+                    </InfoRow>
+                  )}
+                </BottomContent>
+              </CardWrapper>
             );
           })}
-
-          {/* Right Arrow */}
-          <ArrowButton onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
-            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-              <rect x="1" y="1" width="42" height="42" fill="white" />
-              <rect x="1" y="1" width="42" height="42" stroke="#EA2B7B" strokeWidth="2" />
-              <path d="M19 29.5V14.5L26.5 22L19 29.5Z" fill="#EA2B7B" />
-            </svg>
-          </ArrowButton>
-
-        </PaginationWrapper>
+        </WorksGrid>
 
       </WorksContainer>
     </WorksSection>

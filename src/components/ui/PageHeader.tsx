@@ -67,6 +67,11 @@ const IntroText = styled.p`
   }
 `;
 
+const ImageInner = styled.div`
+  position: absolute;
+  inset: 0;
+`;
+
 const IntroImage = styled.div`
   flex: 1;
   width: 260px;
@@ -216,20 +221,25 @@ const PageHeader = ({
       const layers = [
         { ref: parallax1, y: -30, smooth: 1.5 },
         { ref: parallax2, y: -80, smooth: 1 },
-        { ref: parallax3, y: -140, smooth: 0.8 }
+        { ref: parallax3, y: -140, smooth: 0.8 },
       ];
 
-      layers.forEach(layer =>
-        gsap.to(layer.ref.current, {
-          y: layer.y,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: layer.smooth
+      layers.forEach((layer) =>
+        gsap.fromTo(
+          layer.ref.current,
+          { y: 0 },
+          {
+            y: layer.y,
+            ease: "none",
+            immediateRender: true,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top top",
+              end: "bottom top",
+              scrub: layer.smooth,
+            },
           }
-        })
+        )
       );
     }, sectionRef);
 
@@ -244,8 +254,10 @@ const PageHeader = ({
           <IntroBlock>
             <IntroText className="fade-up">{introText}</IntroText>
 
-            <IntroImage ref={parallax1} className="fade-up">
-              <Image src={introImage} alt="" fill style={{ objectFit: "cover" }} />
+            <IntroImage ref={parallax1}>
+              <ImageInner className="fade-up">
+                <Image src={introImage} alt="" fill style={{ objectFit: "cover" }} />
+              </ImageInner>
             </IntroImage>
           </IntroBlock>
 

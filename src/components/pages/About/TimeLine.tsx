@@ -13,6 +13,7 @@ import timelineImg1 from "@/assets/timelineImg1.webp";
 import timelineImg2 from "@/assets/timelineImg2.webp";
 import timelineImg3 from "@/assets/timelineImg3.webp";
 import timelineImg4 from "@/assets/timelineImg4.webp";
+import Image from "next/image";
 
 const TimelineSection = styled.section`
   background: #0c0d12;
@@ -83,7 +84,7 @@ const TimelineDescription = styled.p`
   line-height: 24px;
 `;
 
-const TimelineImage = styled.img`
+const TimelineImage = styled(Image)`
   width: 531px;
   height: 380px;
   object-fit: cover;
@@ -154,6 +155,8 @@ const TimeLine = () => {
               <TimelineImage
                 src={item.image}
                 alt={item.title.replace("\n", " ")}
+                width={531}
+                height={380}
               />
               <TimelineText>
                 <TimelineTitle>
