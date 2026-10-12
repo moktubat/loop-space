@@ -12,6 +12,13 @@ import { COLORS, FONT, BREAKPOINTS } from "@/styles/variables";
 
 import { Heading } from "@/components/ui/Heading";
 
+import processImg1 from "@/assets/processImg1.webp";
+import processImg2 from "@/assets/processImg2.webp";
+import processImg3 from "@/assets/processImg3.webp";
+import processImg4 from "@/assets/processImg4.webp";
+import processImg5 from "@/assets/processImg5.webp";
+import processImg6 from "@/assets/processImg6.webp";
+
 gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------- Styled Components ---------------- */
@@ -179,7 +186,7 @@ const steps = [
     title: "Consultation & Planning",
     description:
       "We begin with an in-depth discussion to understand your needs, preferences, and budget, followed by initial design concepts.",
-    image: "/processImg1.webp",
+    image: processImg1.src,
   },
   {
     id: 2,
@@ -187,7 +194,7 @@ const steps = [
     title: "Space Planning & Layout Design",
     description:
       "Our team creates efficient layouts, ensuring optimal functionality while maintaining aesthetics.",
-    image: "/processImg1.webp",
+    image: processImg2.src,
   },
   {
     id: 3,
@@ -195,7 +202,7 @@ const steps = [
     title: "Mood Board & Material Selection",
     description:
       "We present a curated selection of colors, textures, furniture, and finishes to define the overall theme.",
-    image: "/processImg1.webp",
+    image: processImg3.src,
   },
   {
     id: 4,
@@ -203,7 +210,7 @@ const steps = [
     title: "3D Visualization & Design Approval",
     description:
       "Using advanced rendering techniques, we create realistic 3D models to help you visualize the final look before execution.",
-    image: "/processImg1.webp",
+    image: processImg4.src,
   },
   {
     id: 5,
@@ -211,7 +218,7 @@ const steps = [
     title: "Project Execution & Installation",
     description:
       "Our skilled team oversees construction, furniture placement, and décor styling to bring the design to life.",
-    image: "/processImg1.webp",
+    image: processImg5.src,
   },
   {
     id: 6,
@@ -219,7 +226,7 @@ const steps = [
     title: "Final Review & Handover",
     description:
       "We conduct a final walkthrough, ensuring every detail aligns with your expectations before delivering the completed space.",
-    image: "/processImg1.webp",
+    image: processImg6.src,
   },
 ];
 

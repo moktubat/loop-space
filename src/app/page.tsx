@@ -1,3 +1,4 @@
+import Blog from "@/components/pages/Home/Blog";
 import Gallery from "@/components/pages/Home/Gallery";
 import Hero from "@/components/pages/Home/Hero";
 import Process from "@/components/pages/Home/Process";
@@ -13,6 +14,7 @@ export default function Home() {
       <Process />
       <Works />
       <Gallery />
+      <Blog />
       <Testimonials />
     </div>
   );

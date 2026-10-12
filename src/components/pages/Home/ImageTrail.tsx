@@ -59,7 +59,7 @@ function getMouseDistance(a: { x: number; y: number }, b: { x: number; y: number
 }
 
 /* Functional ImageTrail Logic */
-const useImageTrail = (containerRef: React.RefObject<HTMLDivElement>) => {
+const useImageTrail = (containerRef: React.RefObject<HTMLDivElement | null>) => {
     const state = useRef({
         images: [] as HTMLElement[],
         positions: [] as DOMRect[],
