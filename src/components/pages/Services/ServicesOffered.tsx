@@ -7,6 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 import styled from "styled-components";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Heading } from "@/components/ui/Heading";
 import { BREAKPOINTS } from "@/styles/variables";
@@ -14,14 +15,7 @@ import { container } from "@/styles/mixins";
 import { bodyText } from "@/styles/typography";
 import { COLORS, FONT } from "@/styles/variables";
 
-import residentialImg1 from "@/assets/residentialImg1.webp";
-import residentialImg2 from "@/assets/residentialImg2.webp";
-import commercialImg1 from "@/assets/commercialImg1.webp";
-import commercialImg2 from "@/assets/commercialImg2.webp";
-import renovationImg1 from "@/assets/renovationImg1.webp";
-import renovationImg2 from "@/assets/renovationImg2.webp";
-import customImg1 from "@/assets/customImg1.webp";
-import customImg2 from "@/assets/customImg2.webp";
+import { services } from "@/data/services";
 
 /* -------------------------------------------------------
    STYLED COMPONENTS
@@ -88,7 +82,7 @@ const ServiceContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 
   h3 {
     font-family: ${FONT.helvetica};
@@ -97,6 +91,7 @@ const ServiceContent = styled.div`
     letter-spacing: -0.96px;
     text-transform: uppercase;
     margin: 0;
+    line-height: 1.1;
     color: #1d1f2c;
 
     @media (max-width: ${BREAKPOINTS.sm}px) {
@@ -107,7 +102,7 @@ const ServiceContent = styled.div`
   p {
     font-family: ${FONT.urbanist};
     font-size: 20px;
-    line-height: 28px;
+    line-height: 26px;
     color: #595b68;
     margin: 0;
 
@@ -121,11 +116,11 @@ const ServiceContent = styled.div`
 const BulletList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 50px;
+  gap: 10px;
+  margin-top: 24px;
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    margin-top: 32px;
+    margin-top: 20px;
   }
 `;
 
@@ -135,7 +130,7 @@ const Bullet = styled.div`
   font-family: ${FONT.urbanist};
   font-size: 24px;
   color: #595b68;
-  gap: 12px;
+  gap: 8px;
 
   div {
     height: 1px;
@@ -145,7 +140,7 @@ const Bullet = styled.div`
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
     font-size: 18px;
-    gap: 8px;
+    gap: 6px;
   }
 `;
 
@@ -197,63 +192,28 @@ const ImgWide = styled(Image)`
   }
 `;
 
-/* -------------------------------------------------------
-   DATA
-------------------------------------------------------- */
-const servicesData = [
-  {
-    title: "Residential Design",
-    desc: "Crafting personalized living spaces that reflect your unique style and enhance daily life.",
-    bullets: [
-      "Full home interior design",
-      "Single-room makeovers",
-      "Space planning & layout optimization",
-      "Lighting & color scheme coordination",
-      "Smart home & automation solutions",
-    ],
-    images: [residentialImg1, residentialImg2],
-    reverse: false,
-  },
-  {
-    title: "Commercial Design",
-    desc: "Developing functional and aesthetically pleasing environments that align with your brand identity.",
-    bullets: [
-      "Modern office space design",
-      "Retail store & showroom planning",
-      "Café & restaurant ambiance creation",
-      "Hotel & resort luxurious interiors",
-      "Compliance with commercial standards",
-    ],
-    images: [commercialImg1, commercialImg2],
-    reverse: true,
-  },
-  {
-    title: "Renovation",
-    desc: "Transforming existing spaces to meet new needs and modern aesthetics.",
-    bullets: [
-      "Structural remodeling & expansion",
-      "Interior redesign",
-      "Sustainable upgrades",
-      "Kitchen & bathroom transformations",
-      "Flooring & wall enhancements",
-    ],
-    images: [renovationImg1, renovationImg2],
-    reverse: false,
-  },
-  {
-    title: "Custom Furniture",
-    desc: "Designing and crafting bespoke furniture pieces that perfectly fit your space and style.",
-    bullets: [
-      "Tailor-made designs",
-      "Premium material options",
-      "Handcrafted by artisans",
-      "Ergonomic solutions",
-      "Multi-functional furniture",
-    ],
-    images: [customImg1, customImg2],
-    reverse: true,
-  },
-];
+const LearnMoreLink = styled(Link)`
+  text-decoration: none;
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: ${FONT.urbanist};
+  color: ${COLORS.brandPink};
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  align-self: flex-start;
+
+  svg {
+    stroke: ${COLORS.brandPink};
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: translateX(4px);
+  }
+`;
 
 /* -------------------------------------------------------
    COMPONENT
@@ -321,15 +281,15 @@ export default function ServicesOffered() {
         </Intro>
 
         <ServiceGroup>
-          {servicesData.map((service, i) => (
+          {services.map((service, i) => (
             <ServiceItem
-              key={i}
+              key={service.id}
               ref={(el) => { if (el) itemsRef.current[i] = el; }}
-              style={{ flexDirection: service.reverse ? "row-reverse" : "row" }}
+              style={{ flexDirection: i % 2 !== 0 ? "row-reverse" : "row" }}
             >
               <ServiceContent>
                 <h3>{service.title}</h3>
-                <p>{service.desc}</p>
+                <p>{service.hero.description}</p>
 
                 <BulletList>
                   {service.bullets.map((text, j) => (
@@ -339,18 +299,29 @@ export default function ServicesOffered() {
                     </Bullet>
                   ))}
                 </BulletList>
+
+                <LearnMoreLink href={`/services/${service.slug}`}>
+                  Learn More
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h14M13 6l6 6-6 6" stroke={COLORS.brandPink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </LearnMoreLink>
               </ServiceContent>
 
               <ServiceImages>
                 <ImgTall
                   className="reveal-img"
-                  src={service.images[0]}
+                  src={service.images.tall}
                   alt={service.title + " image tall"}
+                  width={306}
+                  height={452}
                 />
                 <ImgWide
                   className="reveal-img"
-                  src={service.images[1]}
+                  src={service.images.wide}
                   alt={service.title + " image wide"}
+                  width={306}
+                  height={288}
                 />
               </ServiceImages>
             </ServiceItem>

@@ -4,15 +4,12 @@ import { useRef, useLayoutEffect, useState } from "react";
 import styled from "styled-components";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
 
 import { container, sectionSpacing } from "@/styles/mixins";
 import { bodyText } from "@/styles/typography";
 import { COLORS, FONT, BREAKPOINTS } from "@/styles/variables";
-
-import serviceImg1 from "@/assets/serviceImg1.webp";
-import serviceImg2 from "@/assets/serviceImg2.webp";
-import serviceImg3 from "@/assets/serviceImg3.webp";
-import serviceImg4 from "@/assets/serviceImg4.webp";
+import { services } from "@/data/services";
 
 import { Heading } from "@/components/ui/Heading";
 import { TextLink } from "@/components/ui/TextLink";
@@ -180,35 +177,6 @@ const KeyPoint = styled.li<{ $visible: boolean; $index: number }>`
   }
 `;
 
-/* ---------------- Data ---------------- */
-
-const services = [
-  {
-    id: 1,
-    name: "Residential Design",
-    image: serviceImg1.src,
-    points: ["Space Planning", "Color Palette", "Material Selection", "Mood Board Creation"],
-  },
-  {
-    id: 2,
-    name: "Commercial Design",
-    image: serviceImg2.src,
-    points: ["Office Layouts", "Brand Integration", "Lighting Design", "Space Flow Analysis"],
-  },
-  {
-    id: 3,
-    name: "Renovation",
-    image: serviceImg3.src,
-    points: ["Full Remodeling", "Structural Updates", "Modern Finishes", "On Time Delivery"],
-  },
-  {
-    id: 4,
-    name: "Custom Furniture",
-    image: serviceImg4.src,
-    points: ["Bespoke Pieces", "Material Sourcing", "Ergonomic Design", "Hand Built Quality"],
-  },
-];
-
 /* ---------------- Component ---------------- */
 
 const Services = () => {
@@ -216,11 +184,9 @@ const Services = () => {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [collapsedIndex, setCollapsedIndex] = useState<number | null>(null);
 
-  /* Hover expand logic */
   const expandCard = (index: number) => {
     cardRefs.current.forEach((card, i) => {
       if (!card) return;
-
       gsap.killTweensOf(card);
       gsap.to(card, {
         flexGrow: i === index ? 1.4 : 0.9,
@@ -228,82 +194,37 @@ const Services = () => {
         ease: "power3.out",
       });
     });
-
     setCollapsedIndex(index);
   };
 
   const resetCards = () => {
     cardRefs.current.forEach((card) => {
       if (!card) return;
-
-      gsap.to(card, {
-        flexGrow: 1,
-        duration: 1,
-        ease: "power2.out",
-      });
+      gsap.to(card, { flexGrow: 1, duration: 1, ease: "power2.out" });
     });
-
     setCollapsedIndex(null);
   };
 
-  /* ---------------- Scroll animations ---------------- */
-
   useLayoutEffect(() => {
     if (!sectionRef.current) return;
-
     const ctx = gsap.context(() => {
       const heading = sectionRef.current!.querySelector("h2");
       const paragraph = sectionRef.current!.querySelector("p");
       const cards = cardRefs.current.filter(Boolean);
 
-      // 1) Set initial hidden state BEFORE the browser paints
       gsap.set(heading, { opacity: 0, y: 50 });
       gsap.set(paragraph, { opacity: 0, y: 30 });
       gsap.set(cards, { opacity: 0, y: 40 });
 
-      // 2) Animate to visible on scroll
-      gsap.to(heading, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          once: true,
-        },
-      });
-
-      gsap.to(paragraph, {
-        opacity: 1,
-        y: 0,
-        duration: 0.5,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 78%",
-          once: true,
-        },
-      });
-
-      gsap.to(cards, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger: 0.15,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          once: true,
-        },
-      });
+      gsap.to(heading, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true } });
+      gsap.to(paragraph, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", scrollTrigger: { trigger: sectionRef.current, start: "top 78%", once: true } });
+      gsap.to(cards, { opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: "power3.out", scrollTrigger: { trigger: sectionRef.current, start: "top 75%", once: true } });
     }, sectionRef);
 
     ScrollTrigger.refresh();
-
     return () => ctx.revert();
   }, []);
+
 
   return (
     <ServicesSection ref={sectionRef}>
@@ -312,7 +233,6 @@ const Services = () => {
           <Heading>
             Services <span className="highlightTxt">Offered</span>
           </Heading>
-
           <DescriptionText>
             Our interior design services cater to a variety of needs, from
             residential makeovers to commercial space transformations.
@@ -326,31 +246,22 @@ const Services = () => {
             return (
               <ServiceCard
                 key={service.id}
-                ref={(el) => {
-                  cardRefs.current[i] = el;
-                }}
-                $image={service.image}
+                ref={(el) => { cardRefs.current[i] = el; }}
+                $image={service.cardImage}
                 $collapsed={collapsedIndex !== null && collapsedIndex !== i}
                 onMouseEnter={() => expandCard(i)}
                 onMouseLeave={resetCards}
               >
                 <ServiceContent>
-                  <ServiceName
-                    $collapsed={collapsedIndex !== null && collapsedIndex !== i}
-                  >
-                    {service.name}
+                  <ServiceName $collapsed={collapsedIndex !== null && collapsedIndex !== i}>
+                    {service.title}
                   </ServiceName>
 
-                  {/* Key points — visible on hover (desktop) / always (mobile) */}
                   <KeyPointsWrapper $visible={isExpanded}>
                     <KeyPointsInner>
                       <KeyPointsList>
                         {service.points.map((point, pIdx) => (
-                          <KeyPoint
-                            key={point}
-                            $visible={isExpanded}
-                            $index={pIdx}
-                          >
+                          <KeyPoint key={point} $visible={isExpanded} $index={pIdx}>
                             {point}
                           </KeyPoint>
                         ))}
@@ -358,18 +269,15 @@ const Services = () => {
                     </KeyPointsInner>
                   </KeyPointsWrapper>
 
-                  <TextLink variant="lightGray" href="#">
-                    Learn More
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M7 17L17 7M17 7H7M17 7V17"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </TextLink>
+                  {/* Updated Link to point to details page */}
+                  <Link href={`/services/${service.slug}`} style={{ textDecoration: 'none' }}>
+                    <TextLink variant="lightGray">
+                      Learn More
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M7 17L17 7M17 7H7M17 7V17" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </TextLink>
+                  </Link>
                 </ServiceContent>
               </ServiceCard>
             );

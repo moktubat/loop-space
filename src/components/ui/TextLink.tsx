@@ -3,7 +3,7 @@
 import styled, { css } from "styled-components";
 import { COLORS, FONT } from "@/styles/variables";
 
-export const TextLink = styled.a<{ variant?: "pink" | "lightGray" }>`
+export const TextLink = styled.span<{ variant?: "pink" | "lightGray" }>`
   position: relative;
   display: inline-flex;
   align-items: center;

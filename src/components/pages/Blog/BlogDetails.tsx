@@ -33,32 +33,47 @@ const ArticleHeader = styled.header`
   margin: 0 auto;
   text-align: center;
   padding: 40px 16px 60px;
-  
-  span { 
-    color: ${COLORS.brandPink}; 
-    font-size: 14px; 
-    font-weight: 600; 
+
+  span {
+    font-family: ${FONT.urbanist};
+    color: ${COLORS.brandPink};
+    font-size: 14px;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
-  h1 { 
+
+  h1 {
     font-family: ${FONT.helvetica};
-    font-size: 48px; 
-    line-height: 1.1; 
-    margin: 16px 0; 
+    font-size: 48px;
+    line-height: 1.1;
+    margin: 16px 0;
     color: ${COLORS.textPrimary};
     letter-spacing: -1px;
   }
-  p { 
-    color: ${COLORS.textMuted}; 
-    font-size: 18px; 
+
+  p {
+    font-family: ${FONT.urbanist};
+    color: ${COLORS.textMuted};
+    font-size: 18px;
     line-height: 1.6;
   }
-  div { 
-    margin-top: 16px; 
-    font-size: 14px; 
+
+  div {
+    margin-top: 16px;
+    font-size: 14px;
     color: ${COLORS.textMuted};
     font-family: ${FONT.urbanist};
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    h1 {
+      font-size: 36px;
+    }
+
+    p {
+      font-size: 16px;
+    }
   }
 `;
 
@@ -278,27 +293,37 @@ const AuthorInfo = styled.div`
   align-items: center;
   justify-content: center;
   gap: 16px;
-  
-  img { 
-    border-radius: 50%; 
+
+  img {
     object-fit: cover;
     border: 2px solid white;
+    flex-shrink: 0;
+    width: 68px;
+    height: 68px;
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      width: 64px;
+      height: 64px;
+    }
   }
-  div { 
-    text-align: left; 
-    strong { 
+
+  div {
+    text-align: left;
+
+    strong {
       display: block;
-      font-size: 18px; 
+      font-size: 18px;
       margin-bottom: 4px;
       font-family: ${FONT.urbanist};
       font-weight: 600;
-    } 
-    p { 
-      font-size: 14px; 
+    }
+
+    p {
+      font-size: 14px;
       opacity: 0.9;
       font-family: ${FONT.urbanist};
       margin: 0;
-    } 
+    }
   }
 `;
 
@@ -345,11 +370,17 @@ const CTAButton = styled.button`
 
 const RelatedGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  
-  @media (max-width: ${BREAKPOINTS.md}px) { 
-    grid-template-columns: 1fr; 
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 `;
 
@@ -359,192 +390,307 @@ const RelatedCard = styled.article`
   background: ${COLORS.white};
   overflow: hidden;
   border: 1px solid ${COLORS.subtle};
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.3s ease;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  will-change: transform;
 
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(29, 31, 44, 0.08);
   }
 `;
 
 const RelatedImageWrapper = styled.div`
   width: 100%;
-  height: 220px;
+  height: 320px;
   position: relative;
   overflow: hidden;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    height: 220px;
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    height: 240px;
+  }
+
+  img {
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.6s ease;
+  }
+
+  ${RelatedCard}:hover & img {
+    transform: scale(1.05);
+  }
 `;
 
 const RelatedContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 20px;
-  
-  div { 
-    font-size: 14px; 
-    color: ${COLORS.textMuted};
-    margin-bottom: 8px;
-    font-family: ${FONT.urbanist};
+  flex: 1;
+`;
+
+const RelatedMeta = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const RelatedPublisher = styled.p`
+  font-family: ${FONT.urbanist};
+  font-size: 14px;
+  font-weight: 500;
+  color: ${COLORS.brandPink};
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+`;
+
+const RelatedDate = styled.span`
+  font-family: ${FONT.urbanist};
+  font-size: 14px;
+  font-weight: 500;
+  color: ${COLORS.textMuted};
+`;
+
+const RelatedSeparator = styled.span`
+  color: ${COLORS.textMuted};
+  font-size: 14px;
+`;
+
+const RelatedTitle = styled.h4`
+  font-family: ${FONT.helvetica};
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 28px;
+  color: ${COLORS.textPrimary};
+  margin: 0;
+  letter-spacing: -0.4px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 20px;
+    line-height: 26px;
   }
-  h4 { 
-    font-family: ${FONT.helvetica}; 
-    font-size: 20px; 
-    margin: 0 0 16px 0; 
-    color: ${COLORS.textPrimary};
+`;
+
+const RelatedDetailsButton = styled.span`
+  margin-top: auto;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #fff;
+  border-left: 2px solid #ea2b7b;
+  border-top: 2px solid #ea2b7b;
+  border-right: 2px solid #ea2b7b;
+  border-bottom: 4px solid #ea2b7b;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  align-self: flex-start;
+
+  font-family: ${FONT.urbanist};
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: #ea2b7b;
+  transition: transform 0.25s ease;
+
+  svg {
+    stroke: #ea2b7b;
   }
-  span { 
-    color: ${COLORS.brandPink}; 
-    font-weight: 600;
-    font-family: ${FONT.urbanist};
-    font-size: 14px;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
   }
 `;
 
 interface BlogDetailsProps {
-    blog: BlogPost;
-    relatedPosts: BlogPost[];
+  blog: BlogPost;
+  relatedPosts: BlogPost[];
 }
 
 const BlogDetails = ({ blog, relatedPosts }: BlogDetailsProps) => {
-    return (
-        <DetailsWrapper>
-            <BreadcrumbNav>
-                <Link href="/">Home</Link>
-                <span>/</span>
-                <Link href="/blog">Blog</Link>
-                <span>/</span>
-                {blog.category}
-            </BreadcrumbNav>
+  return (
+    <DetailsWrapper>
+      <BreadcrumbNav>
+        <Link href="/">Home</Link>
+        <span>/</span>
+        <Link href="/blog">Blog</Link>
+        <span>/</span>
+        {blog.category}
+      </BreadcrumbNav>
 
-            <ArticleHeader>
-                <span>{blog.category}</span>
-                <h1>{blog.title}</h1>
-                <p>{blog.excerpt}</p>
-                <div>{blog.author} · {blog.date} · {blog.readingTime}</div>
-            </ArticleHeader>
+      <ArticleHeader>
+        <span>{blog.category}</span>
+        <h1>{blog.title}</h1>
+        <p>{blog.excerpt}</p>
+        <div>{blog.author} · {blog.date} · {blog.readingTime}</div>
+      </ArticleHeader>
 
-            <FeaturedImageWrapper>
+      <FeaturedImageWrapper>
+        <Image
+          src={blog.featuredImage}
+          alt={blog.title}
+          fill
+          priority
+          style={{ objectFit: "cover" }}
+          sizes="(max-width: 768px) 100vw, 100vw"
+        />
+      </FeaturedImageWrapper>
+
+      <ContentSection>
+        <h2>Introduction</h2>
+        {blog.introduction.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </ContentSection>
+
+      <SplitSection>
+        <SplitImageWrapper>
+          <Image src={blog.designPrinciples.image} alt={blog.designPrinciples.title} fill style={{ objectFit: "cover" }} sizes="50vw" />
+        </SplitImageWrapper>
+        <SplitTextContent>
+          <h3>{blog.designPrinciples.title}</h3>
+          <p>{blog.designPrinciples.description}</p>
+          <ul>
+            {blog.designPrinciples.bullets.map((b, i) => <li key={i}>{b}</li>)}
+          </ul>
+        </SplitTextContent>
+      </SplitSection>
+
+      <SplitSection $reverse>
+        <SplitImageWrapper>
+          <Image src={blog.lightingTextures.image} alt={blog.lightingTextures.title} fill style={{ objectFit: "cover" }} sizes="50vw" />
+        </SplitImageWrapper>
+        <SplitTextContent>
+          <h3>{blog.lightingTextures.title}</h3>
+          <p>{blog.lightingTextures.description}</p>
+          <ul>
+            {blog.lightingTextures.bullets.map((b, i) => <li key={i}>{b}</li>)}
+          </ul>
+        </SplitTextContent>
+      </SplitSection>
+
+      <SectionWrapper>
+        <SectionTitle>Pros & Cons</SectionTitle>
+        <ProsConsGrid>
+          <ProsColumn>
+            <h4>Pros</h4>
+            <ul>
+              {blog.pros.map((p, i) => <li key={i}>{p}</li>)}
+            </ul>
+          </ProsColumn>
+          <ConsColumn>
+            <h4>Cons</h4>
+            <ul>
+              {blog.cons.map((c, i) => <li key={i}>{c}</li>)}
+            </ul>
+          </ConsColumn>
+        </ProsConsGrid>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <SectionTitle>Material Comparison</SectionTitle>
+        <TableWrapper>
+          <table>
+            <thead>
+              <tr>
+                {blog.comparison.headers.map((h, i) => <th key={i}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {blog.comparison.rows.map((row, i) => (
+                <tr key={i}>
+                  {row.map((cell, j) => <td key={j}>{cell}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableWrapper>
+      </SectionWrapper>
+
+      <SectionWrapper>
+        <AuthorSection>
+          <blockquote>“{blog.takeaway}”</blockquote>
+          <AuthorInfo>
+            <Image src={blog.authorImage} alt={blog.author} width={68} height={68} />
+            <div>
+              <strong>{blog.author}</strong>
+              <p>{blog.authorBio}</p>
+            </div>
+          </AuthorInfo>
+        </AuthorSection>
+      </SectionWrapper>
+
+      <CTASection>
+        <h2>Enjoyed this article?</h2>
+        <p>Explore more ideas for your next interior transformation.</p>
+        <Link href="/services" passHref>
+          <CTAButton>Explore Our Services</CTAButton>
+        </Link>
+      </CTASection>
+
+      <SectionWrapper>
+        <SectionTitle>Related Posts</SectionTitle>
+
+        <RelatedGrid>
+          {relatedPosts.map((post) => (
+            <RelatedCard key={post.id}>
+              <RelatedImageWrapper>
                 <Image
-                    src={blog.featuredImage}
-                    alt={blog.title}
-                    fill
-                    priority
-                    style={{ objectFit: "cover" }}
-                    sizes="(max-width: 768px) 100vw, 100vw"
+                  src={post.thumbnail}
+                  alt={post.title}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1320px) 50vw, 25vw"
                 />
-            </FeaturedImageWrapper>
+              </RelatedImageWrapper>
 
-            <ContentSection>
-                <h2>Introduction</h2>
-                {blog.introduction.map((p, i) => (
-                    <p key={i}>{p}</p>
-                ))}
-            </ContentSection>
+              <RelatedContent>
+                <RelatedMeta>
+                  <RelatedPublisher>{post.publisher}</RelatedPublisher>
+                  <RelatedSeparator>•</RelatedSeparator>
+                  <RelatedDate>{post.date}</RelatedDate>
+                </RelatedMeta>
 
-            <SplitSection>
-                <SplitImageWrapper>
-                    <Image src={blog.designPrinciples.image} alt={blog.designPrinciples.title} fill style={{ objectFit: "cover" }} sizes="50vw" />
-                </SplitImageWrapper>
-                <SplitTextContent>
-                    <h3>{blog.designPrinciples.title}</h3>
-                    <p>{blog.designPrinciples.description}</p>
-                    <ul>
-                        {blog.designPrinciples.bullets.map((b, i) => <li key={i}>{b}</li>)}
-                    </ul>
-                </SplitTextContent>
-            </SplitSection>
+                <RelatedTitle>{post.title}</RelatedTitle>
 
-            <SplitSection $reverse>
-                <SplitImageWrapper>
-                    <Image src={blog.lightingTextures.image} alt={blog.lightingTextures.title} fill style={{ objectFit: "cover" }} sizes="50vw" />
-                </SplitImageWrapper>
-                <SplitTextContent>
-                    <h3>{blog.lightingTextures.title}</h3>
-                    <p>{blog.lightingTextures.description}</p>
-                    <ul>
-                        {blog.lightingTextures.bullets.map((b, i) => <li key={i}>{b}</li>)}
-                    </ul>
-                </SplitTextContent>
-            </SplitSection>
-
-            <SectionWrapper>
-                <SectionTitle>Pros & Cons</SectionTitle>
-                <ProsConsGrid>
-                    <ProsColumn>
-                        <h4>Pros</h4>
-                        <ul>
-                            {blog.pros.map((p, i) => <li key={i}>{p}</li>)}
-                        </ul>
-                    </ProsColumn>
-                    <ConsColumn>
-                        <h4>Cons</h4>
-                        <ul>
-                            {blog.cons.map((c, i) => <li key={i}>{c}</li>)}
-                        </ul>
-                    </ConsColumn>
-                </ProsConsGrid>
-            </SectionWrapper>
-
-            <SectionWrapper>
-                <SectionTitle>Material Comparison</SectionTitle>
-                <TableWrapper>
-                    <table>
-                        <thead>
-                            <tr>
-                                {blog.comparison.headers.map((h, i) => <th key={i}>{h}</th>)}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {blog.comparison.rows.map((row, i) => (
-                                <tr key={i}>
-                                    {row.map((cell, j) => <td key={j}>{cell}</td>)}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </TableWrapper>
-            </SectionWrapper>
-
-            <SectionWrapper>
-                <AuthorSection>
-                    <blockquote>“{blog.takeaway}”</blockquote>
-                    <AuthorInfo>
-                        <Image src={blog.authorImage} alt={blog.author} width={60} height={60} />
-                        <div>
-                            <strong>{blog.author}</strong>
-                            <p>{blog.authorBio}</p>
-                        </div>
-                    </AuthorInfo>
-                </AuthorSection>
-            </SectionWrapper>
-
-            <CTASection>
-                <h2>Enjoyed this article?</h2>
-                <p>Explore more ideas for your next interior transformation.</p>
-                <Link href="/services" passHref>
-                    <CTAButton>Explore Our Services</CTAButton>
-                </Link>
-            </CTASection>
-
-            <SectionWrapper>
-                <SectionTitle>Related Posts</SectionTitle>
-                <RelatedGrid>
-                    {relatedPosts.map((post) => (
-                        <Link href={`/blog/${post.slug}`} key={post.id} passHref>
-                            <RelatedCard>
-                                <RelatedImageWrapper>
-                                    <Image src={post.thumbnail} alt={post.title} fill style={{ objectFit: "cover" }} sizes="(max-width: 768px) 100vw, 33vw" />
-                                </RelatedImageWrapper>
-                                <RelatedContent>
-                                    <div>{post.publisher} · {post.date}</div>
-                                    <h4>{post.title}</h4>
-                                    <span>Read More →</span>
-                                </RelatedContent>
-                            </RelatedCard>
-                        </Link>
-                    ))}
-                </RelatedGrid>
-            </SectionWrapper>
-        </DetailsWrapper>
-    );
+                <RelatedDetailsButton as="span">
+                  View Details
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 15 15"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M1 13.5L13.5 1M13.5 1H1M13.5 1V13.5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </RelatedDetailsButton>
+              </RelatedContent>
+            </RelatedCard>
+          ))}
+        </RelatedGrid>
+      </SectionWrapper>
+    </DetailsWrapper>
+  );
 };
 
 export default BlogDetails;
