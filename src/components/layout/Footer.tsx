@@ -32,7 +32,7 @@ const BodyText = styled.p`
   color: ${COLORS.subtle};
 `;
 
-const LinkText = styled.a`
+const LinkText = styled(Link)`
   ${textBase};
   font-weight: 400;
   font-size: 16px;
@@ -210,11 +210,11 @@ const Footer = () => {
 
           <List>
             <LinkText href="/">Home</LinkText>
-            <LinkText href="about">About Us</LinkText>
-            <LinkText href="services">Our Services</LinkText>
-            <LinkText href="works">Our Works</LinkText>
-            <LinkText href="gallery">Gallery</LinkText>
-            <LinkText href="contact">Contact Us</LinkText>
+            <LinkText href="/about">About Us</LinkText>
+            <LinkText href="/services">Our Services</LinkText>
+            <LinkText href="/works">Our Works</LinkText>
+            <LinkText href="/gallery">Gallery</LinkText>
+            <LinkText href="/contact">Contact Us</LinkText>
           </List>
         </Section>
 

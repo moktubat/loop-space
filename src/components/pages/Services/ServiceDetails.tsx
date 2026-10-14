@@ -1,285 +1,427 @@
-
 "use client";
 
-import styled from "styled-components";
+import { useLayoutEffect, useRef, useState } from "react";
+import styled, { css } from "styled-components";
 import Image from "next/image";
 import Link from "next/link";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 import { container } from "@/styles/mixins";
-import { COLORS, FONT, BREAKPOINTS } from "@/styles/variables";
 import { bodyText } from "@/styles/typography";
+import { COLORS, FONT, BREAKPOINTS } from "@/styles/variables";
+import { Heading } from "@/components/ui/Heading";
 import type { Service } from "@/data/services";
 
-const DetailsWrapper = styled.article`
-  padding: 0 0 100px;
+gsap.registerPlugin(ScrollTrigger);
+
+/* ================================================================== */
+/*  SHARED LAYOUT                                                      */
+/* ================================================================== */
+
+type Tone = "white" | "light" | "dark";
+
+const toneBg: Record<Tone, string> = {
+  white: COLORS.white,
+  light: "#f9fafb",
+  dark: COLORS.bgDark,
+};
+
+const Block = styled.section<{ $tone?: Tone }>`
+  background: ${({ $tone = "white" }) => toneBg[$tone]};
+  padding: 100px 16px;
   overflow: hidden;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding: 60px 16px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding: 40px 16px;
+  }
 `;
 
-const BreadcrumbNav = styled.nav`
+const Inner = styled.div`
   ${container}
-  padding: 24px 16px;
-  font-family: ${FONT.urbanist};
-  font-size: 14px;
-  color: ${COLORS.textMuted};
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
 
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    gap: 32px;
+  }
+`;
+
+const Intro = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const Lead = styled.p<{ $light?: boolean }>`
+  ${bodyText};
+  max-width: 900px;
+  margin: 0;
+  color: ${({ $light }) => ($light ? COLORS.subtle : COLORS.textMuted)};
+`;
+
+/* ---------- Buttons (same pink bordered style as the rest of the site) ---------- */
+
+const buttonBase = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: ${FONT.urbanist};
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+
+  svg {
+    transition: transform 0.4s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+  &:hover svg {
+    transform: rotate(45deg);
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    width: 100%;
+    justify-content: center;
+    gap: 12px;
+  }
+`;
+
+const PrimaryButton = styled(Link)`
+  ${buttonBase}
+  background: ${COLORS.brandPink};
+  color: ${COLORS.white};
+  border: 2px solid #f8bdd6;
+  border-bottom-width: 4px;
+
+  &:hover {
+    background: ${COLORS.brandPinkHover};
+  }
+`;
+
+const OutlineButton = styled(Link)`
+  ${buttonBase}
+  background: ${COLORS.white};
+  color: ${COLORS.brandPink};
+  border: 2px solid ${COLORS.brandPink};
+  border-bottom-width: 4px;
+`;
+
+const Arrow = ({ color = "currentColor" }: { color?: string }) => (
+  <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+    <path
+      d="M1 13.5L13.5 1M13.5 1H1M13.5 1V13.5"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/* ================================================================== */
+/*  HERO                                                               */
+/* ================================================================== */
+
+const HeroSection = styled.section`
+  padding: 24px 16px 120px;
+  overflow: hidden;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding-bottom: 80px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding-bottom: 60px;
+  }
+`;
+
+const HeroInner = styled.div`
+  ${container}
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+`;
+
+const Breadcrumb = styled.nav`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  font-family: ${FONT.urbanist};
+  font-size: 14px;
+  color: ${COLORS.textMuted};
 
   a {
-    color: ${COLORS.textMuted};
+    color: inherit;
     text-decoration: none;
-    transition: color 0.2s ease;
-
+    transition: color 0.3s ease;
     &:hover {
       color: ${COLORS.brandPink};
     }
   }
-
-  span {
-    color: ${COLORS.textMuted};
-  }
-`;
-
-const Eyebrow = styled.span`
-  display: inline-block;
-  color: ${COLORS.brandPink};
-  font-family: ${FONT.urbanist};
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 16px;
-`;
-
-const HeroContent = styled.header`
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 60px 24px 48px;
-  text-align: center;
-
-  h1 {
-    font-family: ${FONT.helvetica};
-    font-size: clamp(42px, 6vw, 84px);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.045em;
+  [aria-current="page"] {
     color: ${COLORS.textPrimary};
-    margin: 0 0 24px;
   }
+`;
 
-  p {
-    max-width: 760px;
-    margin: 0 auto;
-    font-family: ${FONT.urbanist};
-    font-size: 20px;
-    line-height: 1.7;
-    color: ${COLORS.textMuted};
+const TitleGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+`;
+
+const titleType = css`
+  margin: 0;
+  font-family: ${FONT.helvetica};
+  font-weight: 400;
+  font-size: clamp(48px, 10vw, 150px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+`;
+
+const TitleLine = styled.h1`
+  ${titleType}
+  color: ${COLORS.textPrimary};
+`;
+
+const TitleAccent = styled.span`
+  ${titleType}
+  display: inline-block;
+  background: #5a378f;
+  color: ${COLORS.lightGray};
+  padding: 10px 14px 16px 8px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+`;
+
+const HeroGrid = styled.div`
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 48px;
+  align-items: end;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    grid-template-columns: 1fr;
+    gap: 40px;
   }
+`;
+
+const HeroLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+`;
+
+const Pills = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  li {
+    padding: 8px 16px;
+    border: 1px solid ${COLORS.subtle};
+    border-radius: 50px;
+    background: ${COLORS.white};
+    font-family: ${FONT.urbanist};
+    font-size: 14px;
+    font-weight: 500;
+    color: ${COLORS.textPrimary};
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+
+    &:hover {
+      background: ${COLORS.brandPink};
+      border-color: ${COLORS.brandPink};
+      color: ${COLORS.white};
+    }
+  }
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    padding: 36px 20px 32px;
-
-    h1 {
-      font-size: 40px;
-    }
-
-    p {
-      font-size: 16px;
-    }
+    flex-direction: column;
   }
 `;
 
-const HeroImage = styled.div`
-  width: 100%;
-  height: min(650px, 60vw);
-  min-height: 300px;
+const HeroMedia = styled.div`
   position: relative;
+  height: 600px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    height: 460px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    height: 340px;
+  }
+`;
+
+const ImageBox = styled.div`
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   background: ${COLORS.lightGray};
 
   img {
     object-fit: cover;
   }
+`;
 
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      0deg,
-      rgba(12, 13, 18, 0.18),
-      transparent 45%
-    );
-    pointer-events: none;
+const HeroFloat = styled.div`
+  position: absolute;
+  left: -48px;
+  bottom: -56px;
+  width: 220px;
+  height: 280px;
+  border: 8px solid ${COLORS.white};
+  background: ${COLORS.lightGray};
+  z-index: 2;
+  will-change: transform;
+
+  img {
+    object-fit: cover;
   }
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    height: 420px;
+    left: 16px;
+    bottom: -32px;
+    width: 160px;
+    height: 200px;
+    border-width: 6px;
   }
-
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    height: 320px;
-    min-height: 0;
+    width: 110px;
+    height: 140px;
+    left: 12px;
+    bottom: -24px;
   }
 `;
 
-const Section = styled.section`
-  ${container}
-  padding: 0 24px;
-  margin: 110px auto 0;
+/* ================================================================== */
+/*  OVERVIEW                                                           */
+/* ================================================================== */
 
-  @media (max-width: ${BREAKPOINTS.md}px) {
-    margin-top: 76px;
-    padding: 0 20px;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    margin-top: 60px;
-    padding: 0 16px;
-  }
-`;
-
-const SectionHeading = styled.div`
-  max-width: 760px;
-  margin: 0 auto 48px;
-  text-align: center;
-
-  h2 {
-    font-family: ${FONT.helvetica};
-    font-size: clamp(32px, 4vw, 52px);
-    font-weight: 400;
-    line-height: 1.12;
-    letter-spacing: -0.035em;
-    color: ${COLORS.textPrimary};
-    margin: 0 0 18px;
-  }
-
-  p {
-    ${bodyText}
-    font-size: 18px;
-    line-height: 1.75;
-    color: ${COLORS.textMuted};
-    margin: 0;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    margin-bottom: 32px;
-
-    p {
-      font-size: 16px;
-    }
-  }
-`;
-
-const SplitSection = styled.section<{ $reverse?: boolean }>`
-  ${container}
+const Split = styled.div<{ $reverse?: boolean }>`
   display: flex;
   flex-direction: ${({ $reverse }) => ($reverse ? "row-reverse" : "row")};
+  gap: 48px;
   align-items: center;
-  gap: clamp(32px, 5vw, 80px);
-  margin: 110px auto 0;
-  padding: 0 24px;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
     flex-direction: column;
     align-items: stretch;
     gap: 32px;
-    margin-top: 76px;
-    padding: 0 20px;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    margin-top: 60px;
-    padding: 0 16px;
   }
 `;
 
-const SplitImage = styled.div`
+const SplitMedia = styled.div`
+  position: relative;
   flex: 1;
   min-width: 0;
-  height: 560px;
-  position: relative;
-  overflow: hidden;
-  background: ${COLORS.lightGray};
-
-  img {
-    object-fit: cover;
-  }
+  height: 640px;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
     height: 420px;
+    width: 100%;
   }
-
   @media (max-width: ${BREAKPOINTS.sm}px) {
     height: 320px;
   }
 `;
 
-const SplitContent = styled.div`
+const SplitText = styled.div`
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
 
-  h2 {
-    font-family: ${FONT.helvetica};
-    font-size: clamp(32px, 4vw, 48px);
-    font-weight: 400;
-    line-height: 1.12;
-    letter-spacing: -0.035em;
-    color: ${COLORS.textPrimary};
-    margin: 0 0 24px;
-  }
+const OverviewHeading = styled.h2`
+  margin: 0;
+  font-family: ${FONT.helvetica};
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: ${COLORS.textPrimary};
+`;
 
-  p {
+const Paragraph = styled.p`
+  ${bodyText}
+  margin: 0;
+  color: ${COLORS.textMuted};
+`;
+
+const Points = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid ${COLORS.subtle};
     font-family: ${FONT.urbanist};
     font-size: 18px;
-    line-height: 1.8;
-    color: ${COLORS.textMuted};
-    margin: 0 0 20px;
+    color: ${COLORS.textPrimary};
+  }
+
+  li::before {
+    content: "";
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    background: ${COLORS.brandPink};
+    border-radius: 50%;
   }
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    p {
+    grid-template-columns: 1fr;
+    li {
       font-size: 16px;
     }
   }
 `;
 
-const CheckList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 28px 0 0;
-  display: grid;
-  gap: 16px;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-family: ${FONT.urbanist};
-    font-size: 16px;
-    line-height: 1.6;
-    color: ${COLORS.textPrimary};
-  }
-
-  li::before {
-    content: "✓";
-    flex-shrink: 0;
-    color: ${COLORS.brandPink};
-    font-weight: 700;
-  }
-`;
+/* ================================================================== */
+/*  OFFERS (dark)                                                      */
+/* ================================================================== */
 
 const OfferGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
   }
-
   @media (max-width: ${BREAKPOINTS.sm}px) {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -287,876 +429,1215 @@ const OfferGrid = styled.div`
 `;
 
 const OfferCard = styled.article`
-  padding: 30px;
-  border: 1px solid ${COLORS.subtle};
-  background: ${COLORS.white};
-  transition:
-    border-color 0.3s ease,
-    transform 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: #15161f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  transition: background 0.4s ease, transform 0.4s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 0;
+    background: ${COLORS.brandPink};
+    transition: width 0.5s ease;
+  }
 
   &:hover {
-    border-color: ${COLORS.brandPink};
+    background: #1a1b26;
     transform: translateY(-4px);
+  }
+  &:hover::after {
+    width: 100%;
   }
 
   h3 {
+    margin: 0;
     font-family: ${FONT.helvetica};
-    font-size: 23px;
     font-weight: 400;
-    line-height: 1.3;
-    color: ${COLORS.textPrimary};
-    margin: 0 0 14px;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: ${COLORS.white};
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 20px;
+    }
   }
 
   p {
+    margin: 0;
     font-family: ${FONT.urbanist};
     font-size: 16px;
-    line-height: 1.75;
-    color: ${COLORS.textMuted};
-    margin: 0;
+    line-height: 1.6;
+    color: ${COLORS.subtle};
+    opacity: 0.8;
   }
+`;
 
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    padding: 24px;
-  }
+const OfferNumber = styled.span`
+  font-family: ${FONT.urbanist};
+  font-size: 20px;
+  font-weight: 600;
+  color: ${COLORS.brandPink};
 `;
 
 const OfferImage = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  margin-bottom: 22px;
   overflow: hidden;
-  background: ${COLORS.lightGray};
 
   img {
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.7s ease;
   }
 
   ${OfferCard}:hover & img {
-    transform: scale(1.04);
+    transform: scale(1.06);
   }
 `;
 
+/* ================================================================== */
+/*  FEATURED PROJECTS                                                  */
+/* ================================================================== */
+
 const ProjectGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
 
-  @media (max-width: ${BREAKPOINTS.sm}px) {
+  @media (max-width: ${BREAKPOINTS.md}px) {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 `;
 
-const ProjectCard = styled.article`
-  min-width: 0;
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  h3 {
-    font-family: ${FONT.helvetica};
-    font-size: 25px;
-    font-weight: 400;
-    color: ${COLORS.textPrimary};
-    margin: 12px 0 8px;
-  }
-
-  p {
-    font-family: ${FONT.urbanist};
-    font-size: 14px;
-    color: ${COLORS.textMuted};
-    margin: 0;
-  }
-`;
-
-const ProjectImage = styled.div`
+const ProjectCard = styled(Link)`
   position: relative;
-  width: 100%;
-  aspect-ratio: 1.35;
+  display: block;
+  height: 560px;
   overflow: hidden;
-  background: ${COLORS.lightGray};
+  background: #000;
+  text-decoration: none;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    height: 440px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    height: 340px;
+  }
 
   img {
     object-fit: cover;
-    transition: transform 0.6s ease;
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   }
-
-  ${ProjectCard}:hover & img {
-    transform: scale(1.04);
+  &:hover img {
+    transform: scale(1.06);
   }
 `;
 
-const GalleryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: 100px;
-  gap: 16px;
+const ProjectOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.15) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+`;
 
-  > div:nth-child(4n + 1) {
-    grid-column: span 7;
-    grid-row: span 4;
+const ProjectDiscover = styled.span`
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  z-index: 4;
+  transform: translate(-50%, -16px);
+  opacity: 0;
+  padding: 12px 32px;
+  background: ${COLORS.white};
+  color: ${COLORS.brandPink};
+  border: 2px solid ${COLORS.brandPink};
+  border-bottom-width: 4px;
+  font-family: ${FONT.urbanist};
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+  ${ProjectCard}:hover & {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
 
-  > div:nth-child(4n + 2) {
-    grid-column: span 5;
-    grid-row: span 3;
+  @media (hover: none) {
+    display: none;
   }
+`;
 
-  > div:nth-child(4n + 3) {
-    grid-column: span 5;
-    grid-row: span 3;
-  }
-
-  > div:nth-child(4n) {
-    grid-column: span 7;
-    grid-row: span 4;
-  }
-
-  @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-auto-rows: 75px;
-    gap: 12px;
-  }
+const ProjectBottom = styled.div`
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 32px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: auto;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+  }
 
-    > div {
-      grid-column: auto !important;
-      grid-row: auto !important;
-      aspect-ratio: 1 / 1.15;
+  h3 {
+    margin: 0;
+    font-family: ${FONT.helvetica};
+    font-weight: 400;
+    font-size: 36px;
+    line-height: 1.1;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    color: ${COLORS.white};
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 24px;
     }
   }
 `;
 
-const GalleryItem = styled.div`
+const Tag = styled.span`
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  font-family: ${FONT.urbanist};
+  font-size: 14px;
+  color: ${COLORS.white};
+`;
+
+/* ================================================================== */
+/*  GALLERY                                                            */
+/* ================================================================== */
+
+const GalleryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+  align-items: end;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    gap: 16px;
+  }
+`;
+
+const spanMap = { landscape: 8, portrait: 4, square: 6 } as const;
+const ratioMap = { landscape: "4 / 3", portrait: "3 / 4", square: "1 / 1" } as const;
+
+const GalleryItem = styled.div<{ $o: keyof typeof spanMap }>`
   position: relative;
-  min-width: 0;
+  grid-column: span ${({ $o }) => spanMap[$o]};
+  aspect-ratio: ${({ $o }) => ratioMap[$o]};
   overflow: hidden;
   background: ${COLORS.lightGray};
 
   img {
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.8s ease;
+  }
+  &:hover img {
+    transform: scale(1.05);
   }
 
-  &:hover img {
-    transform: scale(1.04);
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    grid-column: span ${({ $o }) => ($o === "landscape" ? 12 : 6)};
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    grid-column: span 12;
   }
 `;
 
-const ProcessGrid = styled.div`
+/* ================================================================== */
+/*  PROCESS (dark)                                                     */
+/* ================================================================== */
+
+const StepGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const StepCard = styled.article`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  min-height: 320px;
+  padding: 24px;
+  background: #15161f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0 -1px -1px 0;
+  transition: background 0.4s ease;
+
+  &:hover {
+    background: ${COLORS.brandPink};
+  }
+  &:hover p {
+    color: ${COLORS.white};
   }
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
-    grid-template-columns: 1fr;
-    gap: 28px;
+    min-height: 0;
+    gap: 32px;
   }
-`;
-
-const ProcessCard = styled.article`
-  padding-top: 24px;
-  border-top: 1px solid ${COLORS.subtle};
 
   > span {
-    display: block;
-    color: ${COLORS.brandPink};
     font-family: ${FONT.urbanist};
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 600;
+    color: ${COLORS.white};
   }
 
   h3 {
+    margin: 0 0 8px;
     font-family: ${FONT.helvetica};
-    font-size: 23px;
     font-weight: 400;
-    line-height: 1.3;
-    color: ${COLORS.textPrimary};
-    margin: 0 0 14px;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: ${COLORS.white};
   }
 
   p {
+    margin: 0;
     font-family: ${FONT.urbanist};
     font-size: 16px;
-    line-height: 1.75;
-    color: ${COLORS.textMuted};
-    margin: 0;
+    line-height: 1.6;
+    color: ${COLORS.subtle};
+    transition: color 0.4s ease;
   }
 `;
 
-const BenefitsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 48px;
+/* ================================================================== */
+/*  BENEFITS                                                           */
+/* ================================================================== */
 
+const BenefitGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
   @media (max-width: ${BREAKPOINTS.sm}px) {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 16px;
   }
 `;
 
 const BenefitCard = styled.article`
-  padding: 28px 0;
-  border-top: 1px solid ${COLORS.subtle};
+  padding: 24px;
+  background: ${COLORS.white};
+  border: 1px solid ${COLORS.subtle};
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(29, 31, 44, 0.08);
+    border-color: ${COLORS.brandPink};
+  }
 
   h3 {
+    margin: 0;
     font-family: ${FONT.helvetica};
+    font-weight: 400;
     font-size: 24px;
-    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
     color: ${COLORS.textPrimary};
-    margin: 0 0 12px;
   }
 
   p {
-    font-family: ${FONT.urbanist};
-    font-size: 16px;
-    line-height: 1.8;
-    color: ${COLORS.textMuted};
     margin: 0;
-  }
-`;
-
-const TestimonialGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const TestimonialCard = styled.blockquote`
-  margin: 0;
-  padding: 32px;
-  background: ${COLORS.lightGray};
-
-  > span {
-    display: block;
-    color: ${COLORS.brandPink};
-    letter-spacing: 3px;
-    font-size: 17px;
-    margin-bottom: 20px;
-  }
-
-  > p {
     font-family: ${FONT.urbanist};
     font-size: 18px;
-    line-height: 1.8;
-    color: ${COLORS.textPrimary};
-    margin: 0 0 28px;
-  }
-
-  footer {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  footer img {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  footer h3 {
-    font-family: ${FONT.urbanist};
-    font-size: 16px;
-    font-weight: 700;
-    color: ${COLORS.textPrimary};
-    margin: 0 0 4px;
-  }
-
-  footer p {
-    font-family: ${FONT.urbanist};
-    font-size: 14px;
+    line-height: 1.6;
     color: ${COLORS.textMuted};
-    margin: 0;
-  }
-`;
 
-const FAQList = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  border-top: 1px solid ${COLORS.subtle};
-`;
-
-const FAQItem = styled.details`
-  border-bottom: 1px solid ${COLORS.subtle};
-
-  summary {
-    position: relative;
-    list-style: none;
-    cursor: pointer;
-    padding: 24px 44px 24px 0;
-    font-family: ${FONT.urbanist};
-    font-size: 19px;
-    font-weight: 600;
-    line-height: 1.5;
-    color: ${COLORS.textPrimary};
-  }
-
-  summary::-webkit-details-marker {
-    display: none;
-  }
-
-  summary::after {
-    content: "+";
-    position: absolute;
-    right: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: ${COLORS.brandPink};
-    font-size: 28px;
-    font-weight: 400;
-  }
-
-  &[open] summary::after {
-    content: "−";
-  }
-
-  > p {
-    font-family: ${FONT.urbanist};
-    font-size: 16px;
-    line-height: 1.8;
-    color: ${COLORS.textMuted};
-    margin: -4px 36px 24px 0;
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    summary {
-      font-size: 17px;
-    }
-  }
-`;
-
-const CTASection = styled.section`
-  margin: 110px 0 0;
-  padding: 100px 24px;
-  background: ${COLORS.bgDark};
-  color: ${COLORS.white};
-  text-align: center;
-
-  h2 {
-    max-width: 850px;
-    margin: 0 auto 20px;
-    font-family: ${FONT.helvetica};
-    font-size: clamp(34px, 5vw, 64px);
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.035em;
-  }
-
-  p {
-    max-width: 650px;
-    margin: 0 auto 32px;
-    font-family: ${FONT.urbanist};
-    font-size: 18px;
-    line-height: 1.8;
-    color: ${COLORS.subtle};
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    margin-top: 60px;
-    padding: 64px 20px;
-
-    p {
+    @media (max-width: ${BREAKPOINTS.sm}px) {
       font-size: 16px;
     }
   }
 `;
 
-const CTAButton = styled(Link)`
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 28px;
-  border: 1px solid ${COLORS.brandPink};
-  border-radius: 4px;
+const BenefitIcon = styled.div`
+  width: fit-content;
+  padding: 12px;
   background: ${COLORS.brandPink};
-  color: ${COLORS.white};
-  text-decoration: none;
-  font-family: ${FONT.urbanist};
-  font-size: 16px;
-  font-weight: 700;
-  transition:
-    background 0.25s ease,
-    transform 0.25s ease;
+  border: 1px solid #f8bdd6;
+  border-radius: 4px;
+  display: flex;
 
-  &:hover {
-    background: ${COLORS.brandPinkHover};
-    transform: translateY(-3px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${COLORS.white};
-    outline-offset: 4px;
+  svg {
+    width: 20px;
+    height: 20px;
   }
 `;
 
-const RelatedGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+/* ================================================================== */
+/*  TESTIMONIALS                                                       */
+/* ================================================================== */
 
-  @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+const TestimonialGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
 
   @media (max-width: ${BREAKPOINTS.sm}px) {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 16px;
   }
 `;
 
-const RelatedCard = styled.article`
-  height: 100%;
+const TestimonialCard = styled.blockquote`
+  margin: 0;
+  padding: 28px;
+  background: #f9fafb;
+  border: 1px solid ${COLORS.subtle};
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border: 1px solid ${COLORS.subtle};
-  background: ${COLORS.white};
-  transition:
-    transform 0.3s ease,
-    border-color 0.3s ease;
+  justify-content: space-between;
+  gap: 24px;
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding: 20px;
+  }
+
+  .stars {
+    color: ${COLORS.brandPink};
+    letter-spacing: 4px;
+    font-size: 18px;
+  }
+
+  p {
+    margin: 12px 0 0;
+    font-family: ${FONT.urbanist};
+    font-size: 20px;
+    line-height: 28px;
+    color: ${COLORS.textMuted};
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 16px;
+      line-height: 24px;
+    }
+  }
+
+  footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid ${COLORS.subtle};
+  }
+
+  footer img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  footer strong {
+    display: block;
+    font-family: ${FONT.urbanist};
+    font-size: 20px;
+    font-weight: 600;
+    color: ${COLORS.textPrimary};
+  }
+
+  footer span {
+    font-family: ${FONT.urbanist};
+    font-size: 16px;
+    color: ${COLORS.textMuted};
+  }
+`;
+
+/* ================================================================== */
+/*  FAQ (smooth accordion)                                             */
+/* ================================================================== */
+
+const FAQList = styled.div`
+  border-top: 1px solid ${COLORS.subtle};
+`;
+
+const FAQItem = styled.div`
+  border-bottom: 1px solid ${COLORS.subtle};
+`;
+
+const FAQQuestion = styled.button<{ $open: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: ${FONT.urbanist};
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: ${({ $open }) => ($open ? COLORS.brandPink : COLORS.textPrimary)};
+  transition: color 0.3s ease;
 
   &:hover {
-    transform: translateY(-5px);
-    border-color: ${COLORS.brandPink};
+    color: ${COLORS.brandPink};
+  }
+
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    font-size: 18px;
+    padding: 20px 0;
+  }
+
+  .icon {
+    flex-shrink: 0;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border: 1px solid ${({ $open }) => ($open ? COLORS.brandPink : COLORS.subtle)};
+    background: ${({ $open }) => ($open ? COLORS.brandPink : COLORS.white)};
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .icon::before,
+  .icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 2px;
+    background: ${({ $open }) => ($open ? COLORS.white : COLORS.brandPink)};
+    transform: translate(-50%, -50%);
+    transition: transform 0.4s ease, background 0.3s ease;
+  }
+
+  .icon::after {
+    transform: translate(-50%, -50%) rotate(${({ $open }) => ($open ? "0deg" : "90deg")});
   }
 `;
 
-const RelatedImage = styled.div`
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1.4;
-  overflow: hidden;
-  background: ${COLORS.lightGray};
+const FAQAnswer = styled.div<{ $open: boolean }>`
+  display: grid;
+  grid-template-rows: ${({ $open }) => ($open ? "1fr" : "0fr")};
+  transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
-  img {
-    object-fit: cover;
-    transition: transform 0.5s ease;
+  > div {
+    overflow: hidden;
   }
 
-  ${RelatedCard}:hover & img {
-    transform: scale(1.04);
+  p {
+    margin: 0;
+    padding: 0 60px 24px 0;
+    max-width: 900px;
+    font-family: ${FONT.urbanist};
+    font-size: 18px;
+    line-height: 1.7;
+    color: ${COLORS.textMuted};
+    opacity: ${({ $open }) => ($open ? 1 : 0)};
+    transform: translateY(${({ $open }) => ($open ? "0" : "-8px")});
+    transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 16px;
+      padding-right: 0;
+    }
   }
 `;
 
-const RelatedContent = styled.div`
-  flex: 1;
+/* ================================================================== */
+/*  CTA                                                                */
+/* ================================================================== */
+
+const CTASection = styled.section`
+  padding: 0 16px 100px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding-bottom: 60px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding-bottom: 40px;
+  }
+`;
+
+const CTABox = styled.div`
+  ${container}
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24px;
-  gap: 14px;
+  gap: 24px;
+  padding: 64px;
+  background: #5a378f;
+  color: ${COLORS.white};
 
-  h3 {
-    font-family: ${FONT.helvetica};
-    font-size: 23px;
-    line-height: 1.3;
-    font-weight: 400;
-    color: ${COLORS.textPrimary};
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    padding: 40px 24px;
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    padding: 32px 20px;
+    gap: 20px;
+  }
+
+  h2 {
     margin: 0;
+    max-width: 900px;
+    font-family: ${FONT.helvetica};
+    font-weight: 400;
+    font-size: clamp(36px, 6vw, 80px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+
+  p {
+    ${bodyText}
+    margin: 0;
+    max-width: 680px;
+    color: ${COLORS.subtle};
   }
 `;
 
-const RelatedDescription = styled.p`
-  font-family: ${FONT.urbanist};
-  font-size: 15px;
-  line-height: 1.7;
-  color: ${COLORS.textMuted};
-  margin: 0;
+/* ================================================================== */
+/*  RELATED                                                            */
+/* ================================================================== */
+
+const RelatedGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: ${BREAKPOINTS.sm}px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 `;
 
-const RelatedButton = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 8px;
-  font-family: ${FONT.urbanist};
-  font-size: 15px;
-  font-weight: 700;
-  color: ${COLORS.brandPink};
+const RelatedCard = styled(Link)`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: ${COLORS.white};
+  border: 1px solid ${COLORS.subtle};
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(29, 31, 44, 0.08);
+  }
+
+  .media {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+      height: 220px;
+    }
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      height: 240px;
+    }
+  }
+
+  .media img {
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  &:hover .media img {
+    transform: scale(1.05);
+  }
+
+  .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: ${FONT.helvetica};
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 28px;
+    letter-spacing: -0.4px;
+    color: ${COLORS.textPrimary};
+  }
+
+  p {
+    margin: 0;
+    font-family: ${FONT.urbanist};
+    font-size: 16px;
+    line-height: 24px;
+    color: ${COLORS.textMuted};
+  }
+
+  .more {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: ${FONT.urbanist};
+    font-size: 15px;
+    font-weight: 600;
+    color: ${COLORS.brandPink};
+  }
+
+  .more svg {
+    transition: transform 0.4s ease;
+  }
+  &:hover .more svg {
+    transform: rotate(45deg);
+  }
 `;
+
+/* ================================================================== */
+/*  COMPONENT                                                          */
+/* ================================================================== */
 
 interface ServiceDetailsProps {
-    service: Service;
-    relatedServices: Service[];
+  service: Service;
+  relatedServices: Service[];
 }
 
-const ServiceDetails = ({
-    service,
-    relatedServices,
-}: ServiceDetailsProps) => {
-    return (
-        <DetailsWrapper>
-            {/* Breadcrumbs */}
-            <BreadcrumbNav aria-label="Breadcrumb">
-                <Link href="/">Home</Link>
-                <span aria-hidden="true">/</span>
-                <Link href="/services">Services</Link>
-                <span aria-hidden="true">/</span>
-                <span aria-current="page">{service.title}</span>
-            </BreadcrumbNav>
+const checkIcon = (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
-            {/* 1. Service Hero */}
-            <HeroContent>
-                <Eyebrow>Our Services</Eyebrow>
-                <h1>{service.title}</h1>
-                <p>{service.hero.description}</p>
-            </HeroContent>
+const ServiceDetails = ({ service, relatedServices }: ServiceDetailsProps) => {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-            <HeroImage>
+  const words = service.title.split(" ");
+  const accent = words.pop() ?? service.title;
+  const firstLine = words.join(" ");
+
+  useLayoutEffect(() => {
+    if (!rootRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const ease = "power3.out";
+
+        /* Simple fade-up reveals */
+        gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
+          gsap.fromTo(
+            el,
+            { opacity: 0, y: 40 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.9,
+              ease,
+              scrollTrigger: { trigger: el, start: "top 88%", once: true },
+            }
+          );
+        });
+
+        /* Image mask reveals (top to bottom) with inner zoom settle */
+        gsap.utils.toArray<HTMLElement>("[data-clip]").forEach((el) => {
+          const img = el.querySelector("img");
+          const st = { trigger: el, start: "top 88%", once: true };
+
+          gsap.fromTo(
+            el,
+            { clipPath: "inset(0 0 100% 0)" },
+            { clipPath: "inset(0 0 0% 0)", duration: 1.3, ease, scrollTrigger: st }
+          );
+          if (img) {
+            gsap.fromTo(
+              img,
+              { scale: 1.2 },
+              { scale: 1, duration: 1.6, ease, scrollTrigger: st }
+            );
+          }
+        });
+
+        /* Parallax on floating layers */
+        gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((el) => {
+          const amount = Number(el.dataset.parallax) || -60;
+          gsap.fromTo(
+            el,
+            { y: 0 },
+            {
+              y: amount,
+              ease: "none",
+              scrollTrigger: {
+                trigger: el.parentElement,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+              },
+            }
+          );
+        });
+
+        /* Staggered groups, batched so each row cascades as it enters */
+        gsap.set("[data-stagger]", { opacity: 0, y: 50 });
+        ScrollTrigger.batch("[data-stagger]", {
+          start: "top 90%",
+          once: true,
+          onEnter: (batch) =>
+            gsap.to(batch, {
+              opacity: 1,
+              y: 0,
+              duration: 0.9,
+              stagger: 0.12,
+              ease,
+              overwrite: true,
+            }),
+        });
+      });
+    }, rootRef);
+
+    const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ctx.revert();
+    };
+  }, [service.slug]);
+
+  return (
+    <div ref={rootRef}>
+      {/* ---------------------------- HERO ---------------------------- */}
+      <HeroSection>
+        <HeroInner>
+          <Breadcrumb aria-label="Breadcrumb" data-reveal>
+            <Link href="/">Home</Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/services">Services</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{service.title}</span>
+          </Breadcrumb>
+
+          <TitleGroup data-reveal>
+            {firstLine && <TitleLine>{firstLine}</TitleLine>}
+            {firstLine ? (
+              <TitleAccent as="span">{accent}</TitleAccent>
+            ) : (
+              <TitleLine as="h1">
+                <TitleAccent as="span">{accent}</TitleAccent>
+              </TitleLine>
+            )}
+          </TitleGroup>
+
+          <HeroGrid>
+            <HeroLeft>
+              <Paragraph data-reveal>{service.hero.description}</Paragraph>
+
+              <Pills data-reveal>
+                {service.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </Pills>
+
+              <ButtonRow data-reveal>
+                <PrimaryButton href={service.cta.buttonLink}>
+                  {service.cta.buttonText}
+                  <Arrow color="#fff" />
+                </PrimaryButton>
+                <OutlineButton href="/services">
+                  All Services
+                  <Arrow color={COLORS.brandPink} />
+                </OutlineButton>
+              </ButtonRow>
+            </HeroLeft>
+
+            <HeroMedia>
+              <ImageBox data-clip>
                 <Image
-                    src={service.hero.image}
-                    alt={service.hero.imageAlt}
-                    fill
-                    priority
-                    sizes="100vw"
+                  src={service.hero.image}
+                  alt={service.hero.imageAlt}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 58vw"
                 />
-            </HeroImage>
+              </ImageBox>
 
-            {/* 2. Overview */}
-            <SplitSection>
-                <SplitImage>
+              <HeroFloat data-parallax="-50">
+                <Image
+                  src={service.images.wide}
+                  alt={`${service.title} detail`}
+                  fill
+                  sizes="220px"
+                />
+              </HeroFloat>
+            </HeroMedia>
+          </HeroGrid>
+        </HeroInner>
+      </HeroSection>
+
+      {/* -------------------------- OVERVIEW -------------------------- */}
+      <Block $tone="light">
+        <Inner>
+          <Split>
+            <SplitMedia data-clip>
+              <ImageBox>
+                <Image
+                  src={service.overview.image}
+                  alt={service.overview.imageAlt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </ImageBox>
+            </SplitMedia>
+
+            <SplitText>
+              <OverviewHeading data-reveal>{service.overview.heading}</OverviewHeading>
+
+              {service.overview.description.map((paragraph, i) => (
+                <Paragraph key={i} data-reveal>
+                  {paragraph}
+                </Paragraph>
+              ))}
+
+              <Points data-reveal>
+                {service.bullets.slice(0, 6).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </Points>
+            </SplitText>
+          </Split>
+        </Inner>
+      </Block>
+
+      {/* ---------------------------- OFFERS --------------------------- */}
+      <Block $tone="dark">
+        <Inner>
+          <Intro data-reveal>
+            <Heading color={COLORS.white}>
+              What We <span className="highlightTxt">Offer</span>
+            </Heading>
+            <Lead $light>
+              Tailored solutions designed around your requirements, preferences, and project goals.
+            </Lead>
+          </Intro>
+
+          <OfferGrid>
+            {service.offers.map((offer, i) => (
+              <OfferCard key={`${offer.title}-${i}`} data-stagger>
+                <OfferNumber>{String(i + 1).padStart(2, "0")}</OfferNumber>
+                {offer.image && (
+                  <OfferImage>
                     <Image
-                        src={service.overview.image}
-                        alt={service.overview.imageAlt}
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      src={offer.image}
+                      alt={offer.title}
+                      fill
+                      sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                </SplitImage>
+                  </OfferImage>
+                )}
+                <h3>{offer.title}</h3>
+                <p>{offer.description}</p>
+              </OfferCard>
+            ))}
+          </OfferGrid>
+        </Inner>
+      </Block>
 
-                <SplitContent>
-                    <Eyebrow>Overview</Eyebrow>
-                    <h2>{service.overview.heading}</h2>
+      {/* ------------------------ FEATURED PROJECTS -------------------- */}
+      {service.featuredProjects.length > 0 && (
+        <Block $tone="white">
+          <Inner>
+            <Intro data-reveal>
+              <Heading>
+                Featured <span className="highlightTxt">Work</span>
+              </Heading>
+              <Lead>
+                Selected projects that show our approach to design, functionality, and detail.
+              </Lead>
+            </Intro>
 
-                    {service.overview.description.map((paragraph, index) => (
-                        <p key={`${service.slug}-overview-${index}`}>
-                            {paragraph}
-                        </p>
-                    ))}
+            <ProjectGrid>
+              {service.featuredProjects.map((project) => (
+                <ProjectCard key={project.slug} href="/works" data-stagger>
+                  <Image
+                    src={project.image}
+                    alt={project.imageAlt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                  <ProjectOverlay />
+                  <ProjectDiscover>Discover</ProjectDiscover>
+                  <ProjectBottom>
+                    <Tag>
+                      {project.category} · {project.location}
+                    </Tag>
+                    <h3>{project.title}</h3>
+                  </ProjectBottom>
+                </ProjectCard>
+              ))}
+            </ProjectGrid>
+          </Inner>
+        </Block>
+      )}
 
-                    <CheckList>
-                        {service.points.map((point) => (
-                            <li key={point}>{point}</li>
-                        ))}
-                    </CheckList>
-                </SplitContent>
-            </SplitSection>
+      {/* ---------------------------- GALLERY -------------------------- */}
+      {service.gallery.length > 0 && (
+        <Block $tone="light">
+          <Inner>
+            <Intro data-reveal>
+              <Heading>
+                Design <span className="highlightTxt">Gallery</span>
+              </Heading>
+              <Lead>A closer look at the spaces, materials, and details that inspire our work.</Lead>
+            </Intro>
 
-            {/* 3. What We Offer */}
-            <Section>
-                <SectionHeading>
-                    <Eyebrow>Our Expertise</Eyebrow>
-                    <h2>What We Offer</h2>
-                    <p>
-                        Explore our tailored solutions, designed around your
-                        requirements, preferences, and project goals.
-                    </p>
-                </SectionHeading>
+            <GalleryGrid>
+              {service.gallery.map((item, i) => (
+                <GalleryItem key={`${item.imageAlt}-${i}`} $o={item.orientation} data-clip>
+                  <Image
+                    src={item.image}
+                    alt={item.imageAlt}
+                    fill
+                    sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 66vw"
+                  />
+                </GalleryItem>
+              ))}
+            </GalleryGrid>
+          </Inner>
+        </Block>
+      )}
 
-                <OfferGrid>
-                    {service.offers.map((offer, index) => (
-                        <OfferCard key={`${offer.title}-${index}`}>
-                            {offer.image && (
-                                <OfferImage>
-                                    <Image
-                                        src={offer.image}
-                                        alt={offer.title}
-                                        fill
-                                        sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                    />
-                                </OfferImage>
-                            )}
+      {/* ---------------------------- PROCESS -------------------------- */}
+      <Block $tone="dark">
+        <Inner>
+          <Intro data-reveal>
+            <Heading color={COLORS.white}>
+              Our <span className="highlightTxt">Process</span>
+            </Heading>
+            <Lead $light>
+              A considered approach that takes your project from the first conversation to delivery.
+            </Lead>
+          </Intro>
 
-                            <h3>{offer.title}</h3>
-                            <p>{offer.description}</p>
-                        </OfferCard>
-                    ))}
-                </OfferGrid>
-            </Section>
+          <StepGrid>
+            {service.process.map((item) => (
+              <StepCard key={item.step} data-stagger>
+                <span>{item.step}</span>
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </div>
+              </StepCard>
+            ))}
+          </StepGrid>
+        </Inner>
+      </Block>
 
-            {/* 4. Featured Projects */}
-            <Section>
-                <SectionHeading>
-                    <Eyebrow>Selected Work</Eyebrow>
-                    <h2>Featured {service.title} Projects</h2>
-                    <p>
-                        Discover selected projects that demonstrate our approach
-                        to design, functionality, and attention to detail.
-                    </p>
-                </SectionHeading>
+      {/* ---------------------------- BENEFITS ------------------------- */}
+      <Block $tone="white">
+        <Inner>
+          <Intro data-reveal>
+            <Heading>
+              Why <span className="highlightTxt">Choose Us</span>
+            </Heading>
+            <Lead>
+              Thoughtful planning, a tailored approach, and careful attention to detail.
+            </Lead>
+          </Intro>
 
-                <ProjectGrid>
-                    {service.featuredProjects.map((project) => (
-                        <ProjectCard key={project.slug}>
-                            <Link href={`/projects/${project.slug}`}>
-                                <ProjectImage>
-                                    <Image
-                                        src={project.image}
-                                        alt={project.imageAlt}
-                                        fill
-                                        sizes="(max-width: 480px) 100vw, 50vw"
-                                    />
-                                </ProjectImage>
+          <BenefitGrid>
+            {service.benefits.map((benefit) => (
+              <BenefitCard key={benefit.title} data-stagger>
+                <BenefitIcon>{checkIcon}</BenefitIcon>
+                <h3>{benefit.title}</h3>
+                <p>{benefit.description}</p>
+              </BenefitCard>
+            ))}
+          </BenefitGrid>
+        </Inner>
+      </Block>
 
-                                <h3>{project.title}</h3>
-                                <p>
-                                    {project.category} · {project.location}
-                                </p>
-                            </Link>
-                        </ProjectCard>
-                    ))}
-                </ProjectGrid>
-            </Section>
+      {/* -------------------------- TESTIMONIALS ----------------------- */}
+      {service.testimonials.length > 0 && (
+        <Block $tone="light">
+          <Inner>
+            <Intro data-reveal>
+              <Heading>
+                Client <span className="highlightTxt">Voices</span>
+              </Heading>
+            </Intro>
 
-            {/* 5. Gallery */}
-            <Section>
-                <SectionHeading>
-                    <Eyebrow>Visual Highlights</Eyebrow>
-                    <h2>Design Gallery</h2>
-                    <p>
-                        A closer look at the spaces, materials, and details that
-                        inspire our work.
-                    </p>
-                </SectionHeading>
-
-                <GalleryGrid>
-                    {service.gallery.map((item, index) => (
-                        <GalleryItem key={`${item.imageAlt}-${index}`}>
-                            <Image
-                                src={item.image}
-                                alt={item.imageAlt}
-                                fill
-                                sizes="(max-width: 480px) 50vw, (max-width: 1024px) 50vw, 60vw"
-                            />
-                        </GalleryItem>
-                    ))}
-                </GalleryGrid>
-            </Section>
-
-            {/* 6. Design Process */}
-            <Section>
-                <SectionHeading>
-                    <Eyebrow>How We Work</Eyebrow>
-                    <h2>Our Design Process</h2>
-                    <p>
-                        A considered approach that takes your project from the
-                        initial conversation through design development and delivery.
-                    </p>
-                </SectionHeading>
-
-                <ProcessGrid>
-                    {service.process.map((item) => (
-                        <ProcessCard key={item.step}>
-                            <span>{item.step}</span>
-                            <h3>{item.title}</h3>
-                            <p>{item.description}</p>
-                        </ProcessCard>
-                    ))}
-                </ProcessGrid>
-            </Section>
-
-            {/* 7. Why Choose Us */}
-            <Section>
-                <SectionHeading>
-                    <Eyebrow>Our Difference</Eyebrow>
-                    <h2>Why Choose Us</h2>
-                    <p>
-                        We combine thoughtful planning, a tailored approach, and
-                        careful attention to detail to create meaningful spaces.
-                    </p>
-                </SectionHeading>
-
-                <BenefitsGrid>
-                    {service.benefits.map((benefit) => (
-                        <BenefitCard key={benefit.title}>
-                            <h3>{benefit.title}</h3>
-                            <p>{benefit.description}</p>
-                        </BenefitCard>
-                    ))}
-                </BenefitsGrid>
-            </Section>
-
-            {/* 8. Client Testimonials */}
-            {service.testimonials.length > 0 && (
-                <Section>
-                    <SectionHeading>
-                        <Eyebrow>Client Experiences</Eyebrow>
-                        <h2>What Our Clients Say</h2>
-                        <p>
-                            Every project is a collaboration. Here are some
-                            experiences shared by our clients.
-                        </p>
-                    </SectionHeading>
-
-                    <TestimonialGrid>
-                        {service.testimonials.map((testimonial, index) => (
-                            <TestimonialCard
-                                key={`${testimonial.name}-${index}`}
-                            >
-                                <span
-                                    aria-label={`${testimonial.rating} out of 5 stars`}
-                                    role="img"
-                                >
-                                    {"★".repeat(
-                                        Math.max(0, Math.min(5, testimonial.rating))
-                                    )}
-                                </span>
-
-                                <p>“{testimonial.quote}”</p>
-
-                                <footer>
-                                    {testimonial.image && (
-                                        <Image
-                                            src={testimonial.image}
-                                            alt=""
-                                            width={48}
-                                            height={48}
-                                        />
-                                    )}
-
-                                    <div>
-                                        <h3>{testimonial.name}</h3>
-                                        <p>{testimonial.role}</p>
-                                    </div>
-                                </footer>
-                            </TestimonialCard>
-                        ))}
-                    </TestimonialGrid>
-                </Section>
-            )}
-
-            {/* 9. FAQs */}
-            <Section>
-                <SectionHeading>
-                    <Eyebrow>Need to Know</Eyebrow>
-                    <h2>Frequently Asked Questions</h2>
-                    <p>
-                        Find answers to common questions about our {service.title.toLowerCase()}{" "}
-                        services and how we work.
-                    </p>
-                </SectionHeading>
-
-                <FAQList>
-                    {service.faqs.map((faq, index) => (
-                        <FAQItem key={`${faq.question}-${index}`}>
-                            <summary>{faq.question}</summary>
-                            <p>{faq.answer}</p>
-                        </FAQItem>
-                    ))}
-                </FAQList>
-            </Section>
-
-            {/* 10. Final CTA */}
-            <CTASection>
-                <Eyebrow>{service.title}</Eyebrow>
-                <h2>{service.cta.title}</h2>
-                <p>{service.cta.description}</p>
-
-                <CTAButton href={service.cta.buttonLink}>
-                    {service.cta.buttonText}
-                    <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        aria-hidden="true"
+            <TestimonialGrid>
+              {service.testimonials.map((t, i) => (
+                <TestimonialCard key={`${t.name}-${i}`} data-stagger>
+                  <div>
+                    <span
+                      className="stars"
+                      role="img"
+                      aria-label={`${t.rating} out of 5 stars`}
                     >
-                        <path
-                            d="M3 13L13 3M13 3H4M13 3V12"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </CTAButton>
-            </CTASection>
+                      {"★".repeat(Math.max(0, Math.min(5, t.rating)))}
+                    </span>
+                    <p>“{t.quote}”</p>
+                  </div>
 
-            {/* 11. Other Services */}
-            {relatedServices.length > 0 && (
-                <Section>
-                    <SectionHeading>
-                        <Eyebrow>Explore More</Eyebrow>
-                        <h2>Other Services</h2>
-                        <p>
-                            Discover more ways we can help bring your next project
-                            to life.
-                        </p>
-                    </SectionHeading>
+                  <footer>
+                    {t.image && <Image src={t.image} alt="" width={56} height={56} />}
+                    <div>
+                      <strong>{t.name}</strong>
+                      <span>{t.role}</span>
+                    </div>
+                  </footer>
+                </TestimonialCard>
+              ))}
+            </TestimonialGrid>
+          </Inner>
+        </Block>
+      )}
 
-                    <RelatedGrid>
-                        {relatedServices.map((related) => (
-                            <Link
-                                href={`/services/${related.slug}`}
-                                key={related.id}
-                                style={{
-                                    textDecoration: "none",
-                                    display: "block",
-                                    height: "100%",
-                                }}
-                            >
-                                <RelatedCard>
-                                    <RelatedImage>
-                                        <Image
-                                            src={related.cardImage}
-                                            alt={related.title}
-                                            fill
-                                            sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        />
-                                    </RelatedImage>
+      {/* ------------------------------ FAQ ---------------------------- */}
+      <Block $tone="white">
+        <Inner>
+          <Intro data-reveal>
+            <Heading>
+              Common <span className="highlightTxt">Questions</span>
+            </Heading>
+            <Lead>
+              Answers to what people ask most about our {service.title.toLowerCase()} service.
+            </Lead>
+          </Intro>
 
-                                    <RelatedContent>
-                                        <h3>{related.title}</h3>
-                                        <RelatedDescription>
-                                            {related.excerpt}
-                                        </RelatedDescription>
+          <FAQList data-reveal>
+            {service.faqs.map((faq, i) => {
+              const open = openFaq === i;
+              return (
+                <FAQItem key={`${faq.question}-${i}`}>
+                  <h3 style={{ margin: 0 }}>
+                    <FAQQuestion
+                      type="button"
+                      $open={open}
+                      aria-expanded={open}
+                      aria-controls={`faq-panel-${i}`}
+                      id={`faq-btn-${i}`}
+                      onClick={() => setOpenFaq(open ? null : i)}
+                    >
+                      {faq.question}
+                      <span className="icon" aria-hidden="true" />
+                    </FAQQuestion>
+                  </h3>
+                  <FAQAnswer
+                    $open={open}
+                    id={`faq-panel-${i}`}
+                    role="region"
+                    aria-labelledby={`faq-btn-${i}`}
+                  >
+                    <div>
+                      <p>{faq.answer}</p>
+                    </div>
+                  </FAQAnswer>
+                </FAQItem>
+              );
+            })}
+          </FAQList>
+        </Inner>
+      </Block>
 
-                                        <RelatedButton>
-                                            Explore Service
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 15 15"
-                                                fill="none"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    d="M1 13.5L13.5 1M13.5 1H1M13.5 1V13.5"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </RelatedButton>
-                                    </RelatedContent>
-                                </RelatedCard>
-                            </Link>
-                        ))}
-                    </RelatedGrid>
-                </Section>
-            )}
-        </DetailsWrapper>
-    );
+      {/* ------------------------------ CTA ---------------------------- */}
+      <CTASection>
+        <CTABox data-reveal>
+          <h2>{service.cta.title}</h2>
+          <p>{service.cta.description}</p>
+          <PrimaryButton href={service.cta.buttonLink}>
+            {service.cta.buttonText}
+            <Arrow color="#fff" />
+          </PrimaryButton>
+        </CTABox>
+      </CTASection>
+
+      {/* ---------------------------- RELATED -------------------------- */}
+      {relatedServices.length > 0 && (
+        <Block $tone="light">
+          <Inner>
+            <Intro data-reveal>
+              <Heading>
+                More <span className="highlightTxt">Services</span>
+              </Heading>
+              <Lead>Discover more ways we can help bring your next project to life.</Lead>
+            </Intro>
+
+            <RelatedGrid>
+              {relatedServices.map((related) => (
+                <RelatedCard
+                  key={related.id}
+                  href={`/services/${related.slug}`}
+                  data-stagger
+                >
+                  <div className="media">
+                    <Image
+                      src={related.cardImage}
+                      alt={related.title}
+                      fill
+                      sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  </div>
+                  <div className="body">
+                    <h3>{related.title}</h3>
+                    <p>{related.excerpt}</p>
+                    <span className="more">
+                      Explore Service
+                      <Arrow color={COLORS.brandPink} />
+                    </span>
+                  </div>
+                </RelatedCard>
+              ))}
+            </RelatedGrid>
+          </Inner>
+        </Block>
+      )}
+    </div>
+  );
 };
 
 export default ServiceDetails;

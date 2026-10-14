@@ -1,188 +1,199 @@
 'use client';
 
+import Link from "next/link";
 import { Heading } from "@/components/ui/Heading";
 import { FONT } from "@/styles";
 import { container } from "@/styles/mixins";
+import { COLORS, BREAKPOINTS } from "@/styles/variables";
 import styled from "styled-components";
 
 const Section = styled.section`
-  padding: 100px 16px;
+    padding: 100px 16px;
+
+    @media (max-width: ${BREAKPOINTS.md}px) {
+        padding: 60px 16px;
+    }
 `;
 
 const Wrapper = styled.div`
-  ${container}
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
+    ${container}
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
 `;
 
 const Intro = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 `;
 
-// Job post card
 const JobCard = styled.div`
-  background: #F9FAFB;
-  border: 1px solid #E4E6E9;
-  padding: 24px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+    background: #f9fafb;
+    border: 1px solid #e4e6e9;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(29, 31, 44, 0.08);
+        border-color: ${COLORS.brandPink};
+    }
 `;
 
-// Top section: left and right
 const JobTop = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
 `;
 
 const JobLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 `;
 
 const JobTitle = styled.h3`
-  font-family: Urbanist;
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 36px;
-  color: #1D1F2C;
-  margin: 0;
+    font-family: ${FONT.urbanist};
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 36px;
+    color: #1d1f2c;
+    margin: 0;
 `;
 
 const JobTags = styled.div`
-  font-family: Urbanist;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 28px;
-  color: #595B68;
-  display: flex;
-  gap: 8px;
-  align-items: center;
+    font-family: ${FONT.urbanist};
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
+    color: #595b68;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 `;
 
 const Tag = styled.span`
-  &:not(:last-child)::after {
-    content: '|';
-    margin-left: 8px;
-    color: #E4E6E9;
-  }
+    &:not(:last-child)::after {
+        content: '|';
+        margin-left: 8px;
+        color: #e4e6e9;
+    }
 `;
 
 const JobMeta = styled.div`
-  display: flex;
-  gap: 56px;
-  margin-top: 12px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 56px;
+    margin-top: 12px;
+    flex-wrap: wrap;
 `;
 
 const MetaLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 `;
 
 const MetaLabel = styled.span`
-  font-family: Urbanist;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-  color: #595B68;
+    font-family: ${FONT.urbanist};
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: #595b68;
 `;
 
 const MetaValue = styled.div`
-  font-family: Urbanist;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  color: #1D1F2C;
+    font-family: ${FONT.urbanist};
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    color: #1d1f2c;
 
-  span {
-    font-weight: 400;
-    font-size: 16px;
-  }
+    span {
+        font-weight: 400;
+        font-size: 16px;
+    }
 `;
 
 const MetaRight = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
 `;
 
 const Buttons = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-top: 12px;
-  align-items: center;
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    align-items: center;
 `;
 
-const ActionButton = styled.button`
-  width: 172px;
-  padding: 12px 16px;
-  border-radius: 6px;
-  background: #fff;
-  border-left: 2px solid #EA2B7B;
-  border-top: 2px solid #EA2B7B;
-  border-right: 2px solid #EA2B7B;
-  border-bottom: 4px solid #EA2B7B;
-  cursor: pointer;
+const ActionButton = styled(Link)`
+    width: 172px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    background: #fff;
+    border-left: 2px solid #ea2b7b;
+    border-top: 2px solid #ea2b7b;
+    border-right: 2px solid #ea2b7b;
+    border-bottom: 4px solid #ea2b7b;
+    cursor: pointer;
+    text-decoration: none;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
 
-  font-family: ${FONT.urbanist};
-  font-size: 18px;
-  font-weight: 600;
-  color: #EA2B7B;
+    font-family: ${FONT.urbanist};
+    font-size: 18px;
+    font-weight: 600;
+    color: #ea2b7b;
 
-  svg {
-    stroke: #EA2B7B;
-  }
+    svg {
+        stroke: #ea2b7b;
+    }
 
-  &:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease;
-  }
+    &:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+    }
 `;
 
 const ApplyButton = styled(ActionButton)`
-  background: #EA2B7B;
-  color: #fff;
-  border-left: 2px solid #F8BDD6;
-  border-top: 2px solid #F8BDD6;
-  border-right: 2px solid #F8BDD6;
-  border-bottom: 4px solid #F8BDD6;
+    background: #ea2b7b;
+    color: #fff;
+    border-left: 2px solid #f8bdd6;
+    border-top: 2px solid #f8bdd6;
+    border-right: 2px solid #f8bdd6;
+    border-bottom: 4px solid #f8bdd6;
 
-  svg {
-    stroke: #fff;
-  }
+    svg {
+        stroke: #fff;
+    }
 `;
 
-// Bottom description
 const JobBottom = styled.div`
-  font-family: Urbanist;
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 28px;
-  color: #595B68;
+    font-family: ${FONT.urbanist};
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 28px;
+    color: #595b68;
 `;
 
 const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid #E4E6E9;
-  
+    border: none;
+    border-top: 1px solid #e4e6e9;
 `;
 
 const OpenPositions = () => {
   const jobs = [
     {
+      slug: "interior-designer",
       title: "Interior Designer",
       tags: ["Design", "Onsite", "Full Time"],
       salary: "$700 - $1000",
@@ -192,6 +203,7 @@ const OpenPositions = () => {
         "Join us as an Interior Designer! Create innovative and functional spaces for residential and commercial projects. Apply now!",
     },
     {
+      slug: "project-manager",
       title: "Project Manager",
       tags: ["Design", "Onsite", "Full Time"],
       salary: "$1000 - $1500",
@@ -201,6 +213,7 @@ const OpenPositions = () => {
         "Join us as a Project Manager! Lead interior design projects, ensuring quality and timely delivery. Apply now!",
     },
     {
+      slug: "3d-visualizer",
       title: "3D Visualizer",
       tags: ["Design", "Onsite", "Full Time"],
       salary: "$600 - $800",
@@ -244,7 +257,7 @@ const OpenPositions = () => {
                 </JobMeta>
               </JobLeft>
               <Buttons>
-                <ActionButton>
+                <ActionButton href={`/career/${job.slug}`}>
                   Details
                   <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                     <path
@@ -257,7 +270,7 @@ const OpenPositions = () => {
                   </svg>
                 </ActionButton>
 
-                <ApplyButton>
+                <ApplyButton href="/contact">
                   Apply Now
                   <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                     <path

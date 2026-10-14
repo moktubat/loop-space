@@ -68,7 +68,7 @@ const NavLinks = styled.div<{ $open?: boolean }>`
   }
 `;
 
-const NavLink = styled.a`
+const NavLink = styled(Link)`
   font-family: ${FONT.urbanist};
   font-size: 20px;
   font-weight: 400;
@@ -86,7 +86,7 @@ const NavLink = styled.a`
   }
 `;
 
-const ContactButton = styled.a`
+const ContactButton = styled(Link)`
   background: #EA2B7B;
   border-radius: 6px;
   padding: 8px 16px;
@@ -196,13 +196,12 @@ const Navbar = () => {
         </Logo>
 
         <NavLinks ref={navRef} $open={isOpen}>
-          <NavLink href="about" onClick={closeMenu}>About</NavLink>
-          <NavLink href="services" onClick={closeMenu}>Services</NavLink>
-          <NavLink href="works" onClick={closeMenu}>Our Works</NavLink>
-          <NavLink href="career" onClick={closeMenu}>Career</NavLink>
-          <NavLink href="blog" onClick={closeMenu}>Blog</NavLink>
-
-          <ContactButton href="contact" onClick={closeMenu}>
+          <NavLink href="/about" onClick={closeMenu}>About</NavLink>
+          <NavLink href="/services" onClick={closeMenu}>Services</NavLink>
+          <NavLink href="/works" onClick={closeMenu}>Our Works</NavLink>
+          <NavLink href="/career" onClick={closeMenu}>Career</NavLink>
+          <NavLink href="/blog" onClick={closeMenu}>Blog</NavLink>
+          <ContactButton href="/contact" onClick={closeMenu}>
             Contact Us
           </ContactButton>
         </NavLinks>
