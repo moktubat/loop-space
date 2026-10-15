@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { Heading } from "@/components/ui/Heading";
-import { FONT } from "@/styles";
 import { container } from "@/styles/mixins";
-import { COLORS, BREAKPOINTS } from "@/styles/variables";
+import { COLORS, BREAKPOINTS, FONT } from "@/styles/variables";
 import styled from "styled-components";
 
 const Section = styled.section`
