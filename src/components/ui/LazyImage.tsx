@@ -1,44 +1,43 @@
-'use client';
+"use client";
 
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/all";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Styled Components
 const LazyContainer = styled.div<{ $width?: string; $height?: string }>`
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    width: ${props => props.$width || '100%'};
-    height: ${props => props.$height || '100%'};
+  position: relative;
+  width: ${(props) => props.$width || "100%"};
+  height: ${(props) => props.$height || "100%"};
+  overflow: hidden;
 `;
 
 const Skeleton = styled.div`
-    position: absolute;
-    inset: 0;
-    background-color: #f0f0f0; // Light gray placeholder
+  position: absolute;
+  inset: 0;
+  background-color: #f0f0f0;
 `;
 
 const StyledNextImage = styled(Image)`
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    width: 100%;
-    height: 120%; // Extra height for parallax movement
-    object-fit: cover;
-    opacity: 0; // Hidden initially for fade-in effect
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 120%; /* Extra height for parallax movement */
+  object-fit: cover;
+  opacity: 0;
 `;
 
-interface LazyImageProps {
+export interface LazyImageProps {
     src: string;
     alt: string;
     parallax?: number;
     blur?: boolean;
+    width?: string;
+    height?: string;
 }
 
 const LazyImage = ({
@@ -46,6 +45,8 @@ const LazyImage = ({
     alt,
     parallax = 0,
     blur = false,
+    width,
+    height,
 }: LazyImageProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -56,16 +57,10 @@ const LazyImage = ({
         const img = containerRef.current.querySelector<HTMLImageElement>("img");
         if (!img) return;
 
-        /* -----------------------------
-           Blur + Fade Reveal
-        ------------------------------ */
+        /* ── Blur + Fade Reveal ── */
         gsap.fromTo(
             img,
-            {
-                opacity: 0,
-                scale: 1.1,
-                filter: blur ? "blur(14px)" : "none",
-            },
+            { opacity: 0, scale: 1.1, filter: blur ? "blur(14px)" : "none" },
             {
                 opacity: 1,
                 scale: 1,
@@ -80,9 +75,7 @@ const LazyImage = ({
             }
         );
 
-        /* -----------------------------
-           Parallax Scroll
-        ------------------------------ */
+        /* ── Parallax Scroll ── */
         if (parallax !== 0) {
             gsap.fromTo(
                 img,
@@ -99,11 +92,10 @@ const LazyImage = ({
                 }
             );
         }
-
     }, [isLoaded, parallax, blur]);
 
     return (
-        <LazyContainer ref={containerRef}>
+        <LazyContainer ref={containerRef} $width={width} $height={height}>
             <Skeleton />
             <StyledNextImage
                 src={src}

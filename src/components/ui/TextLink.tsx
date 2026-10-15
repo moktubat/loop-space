@@ -19,12 +19,12 @@ export const TextLink = styled.span<{ variant?: "pink" | "lightGray" }>`
   padding-bottom: 2px;
 
   color: ${({ variant }) =>
-        variant === "pink" ? COLORS.brandPink : COLORS.lightGray};
+    variant === "pink" ? COLORS.brandPink : COLORS.lightGray};
 
   svg {
     transition: transform 0.4s ease;
     stroke: ${({ variant }) =>
-        variant === "pink" ? COLORS.brandPink : COLORS.lightGray};
+    variant === "pink" ? COLORS.brandPink : COLORS.lightGray};
   }
 
   &::after {
@@ -35,27 +35,17 @@ export const TextLink = styled.span<{ variant?: "pink" | "lightGray" }>`
     height: 2px;
     width: 0;
     background-color: ${({ variant }) =>
-        variant === "pink" ? COLORS.brandPink : COLORS.lightGray};
+    variant === "pink" ? COLORS.brandPink : COLORS.lightGray};
     transition: width 0.4s ease;
   }
 
-  /* Hover effect when hovering the link itself */
-  &:hover::after {
-    width: 100%;
-  }
-  &:hover svg {
-    transform: rotate(45deg);
-  }
+  &:hover::after { width: 100%; }
+  &:hover svg { transform: rotate(45deg); }
 
-  /* Hover effect when parent with class .hover-parent is hovered */
   ${({ variant }) =>
-        variant === "lightGray" &&
-        css`
-      .hover-parent:hover &::after {
-        width: 100%;
-      }
-      .hover-parent:hover & svg {
-        transform: rotate(45deg);
-      }
+    variant === "lightGray" &&
+    css`
+      .hover-parent:hover &::after { width: 100%; }
+      .hover-parent:hover & svg { transform: rotate(45deg); }
     `}
 `;

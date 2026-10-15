@@ -672,77 +672,200 @@ const GalleryItem = styled.div<{ $o: keyof typeof spanMap }>`
 `;
 
 /* ================================================================== */
-/*  PROCESS (dark)                                                     */
+/*  PROCESS (dark, zigzag timeline)                                    */
 /* ================================================================== */
 
-const StepGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
+const Timeline = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+`;
+
+const TimelineLine = styled.span`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1.5px);
+  width: 0;
+  border-left: 3px dotted ${COLORS.brandPink};
+  pointer-events: none;
 
   @media (max-width: ${BREAKPOINTS.md}px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    grid-template-columns: 1fr;
+    left: 34.5px;
   }
 `;
 
-const StepCard = styled.article`
+const TimelineNum = styled.div`
+  grid-area: num;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 48px;
-  min-height: 320px;
-  padding: 24px;
-  background: #15161f;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin: 0 -1px -1px 0;
-  transition: background 0.4s ease;
+  align-items: center;
+  padding: 12px 0;
+  background: ${COLORS.bgDark};
 
-  &:hover {
-    background: ${COLORS.brandPink};
-  }
-  &:hover p {
-    color: ${COLORS.white};
-  }
-
-  @media (max-width: ${BREAKPOINTS.sm}px) {
-    min-height: 0;
-    gap: 32px;
-  }
-
-  > span {
+  small {
     font-family: ${FONT.urbanist};
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: ${COLORS.white};
   }
 
-  h3 {
-    margin: 0 0 8px;
+  strong {
     font-family: ${FONT.helvetica};
     font-weight: 400;
-    font-size: 24px;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1;
+    color: ${COLORS.brandPink};
+  }
+`;
+
+const TimelineText = styled.div`
+  grid-area: text;
+  align-self: center;
+  padding-bottom: 24px;
+  border-bottom: 3px dotted rgba(255, 255, 255, 0.25);
+
+  h3 {
+    margin: 0 0 12px;
+    font-family: ${FONT.helvetica};
+    font-weight: 400;
+    font-size: clamp(28px, 4vw, 56px);
+    line-height: 1;
+    letter-spacing: -0.03em;
     text-transform: uppercase;
     color: ${COLORS.white};
   }
 
   p {
     margin: 0;
+    max-width: 440px;
     font-family: ${FONT.urbanist};
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.6;
     color: ${COLORS.subtle};
-    transition: color 0.4s ease;
+  }
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    border-bottom: none;
+    padding-bottom: 0;
+
+    p {
+      font-size: 16px;
+    }
   }
 `;
 
+const TimelineIcon = styled.div`
+  grid-area: icon;
+  align-self: center;
+  justify-self: center;
+  display: flex;
+  color: ${COLORS.brandPink};
+
+  svg {
+    width: clamp(100px, 12vw, 150px);
+    height: auto;
+    transition: transform 0.6s ease;
+  }
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    justify-self: start;
+    margin-top: 16px;
+
+    svg {
+      width: 56px;
+    }
+  }
+`;
+
+const TimelineRow = styled.div<{ $flip: boolean }>`
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  grid-template-areas: ${({ $flip }) => ($flip ? '"icon num text"' : '"text num icon"')};
+  align-items: center;
+  column-gap: 32px;
+  padding: 40px 0;
+
+  ${({ $flip }) =>
+    $flip &&
+    css`
+      ${TimelineText} {
+        text-align: right;
+      }
+      ${TimelineText} p {
+        margin-left: auto;
+      }
+    `}
+
+  &:hover ${TimelineIcon} svg {
+    transform: scale(1.08) rotate(-4deg);
+  }
+
+  @media (max-width: ${BREAKPOINTS.md}px) {
+    grid-template-columns: 72px 1fr;
+    grid-template-areas:
+      "num text"
+      "num icon";
+    column-gap: 16px;
+    padding: 28px 0;
+
+    ${TimelineText} {
+      text-align: left;
+    }
+    ${TimelineText} p {
+      margin-left: 0;
+    }
+  }
+`;
+
+const strokeProps = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const processIcons = [
+  <svg key="chat" {...strokeProps}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>,
+  <svg key="pen" {...strokeProps}>
+    <path d="M12 19l7-7 3 3-7 7-3-3z" />
+    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+    <path d="M2 2l7.586 7.586" />
+    <circle cx="11" cy="11" r="2" />
+  </svg>,
+  <svg key="tool" {...strokeProps}>
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+  </svg>,
+  <svg key="globe" {...strokeProps}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>,
+  <svg key="rocket" {...strokeProps}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  </svg>,
+  <svg key="check" {...strokeProps}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <path d="M22 4L12 14.01l-3-3" />
+  </svg>,
+];
+
 /* ================================================================== */
-/*  BENEFITS                                                           */
+/*  BENEFITS (colored cards)                                           */
 /* ================================================================== */
+
+const accents = ["#5a378f", COLORS.brandPink, "#f04438", "#f5a524", "#12a07a", "#2e90fa"];
 
 const BenefitGrid = styled.div`
   display: grid;
@@ -758,36 +881,52 @@ const BenefitGrid = styled.div`
   }
 `;
 
-const BenefitCard = styled.article`
-  padding: 24px;
-  background: ${COLORS.white};
-  border: 1px solid ${COLORS.subtle};
+const BenefitHead = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 8px 0;
 
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 14px 28px rgba(29, 31, 44, 0.08);
-    border-color: ${COLORS.brandPink};
+  .num {
+    font-family: ${FONT.urbanist};
+    font-size: 18px;
+    font-weight: 700;
+    color: ${COLORS.white};
   }
 
   h3 {
     margin: 0;
     font-family: ${FONT.helvetica};
     font-weight: 400;
-    font-size: 24px;
-    line-height: 1.2;
+    font-size: 26px;
+    line-height: 1.15;
     letter-spacing: -0.02em;
     text-transform: uppercase;
-    color: ${COLORS.textPrimary};
+    color: ${COLORS.white};
+
+    @media (max-width: ${BREAKPOINTS.sm}px) {
+      font-size: 22px;
+    }
   }
+
+  svg {
+    margin-top: 8px;
+    transition: transform 0.4s ease;
+  }
+`;
+
+const BenefitBody = styled.div`
+  flex: 1;
+  min-height: 140px;
+  padding: 16px;
+  background: ${COLORS.white};
+  border-radius: 6px;
 
   p {
     margin: 0;
     font-family: ${FONT.urbanist};
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.6;
     color: ${COLORS.textMuted};
 
@@ -797,19 +936,35 @@ const BenefitCard = styled.article`
   }
 `;
 
-const BenefitIcon = styled.div`
-  width: fit-content;
-  padding: 12px;
-  background: ${COLORS.brandPink};
-  border: 1px solid #f8bdd6;
-  border-radius: 4px;
+const BenefitCard = styled.article<{ $c: string }>`
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px;
+  background: ${({ $c }) => $c};
+  border-radius: 8px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 
-  svg {
-    width: 20px;
-    height: 20px;
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 30px rgba(29, 31, 44, 0.15);
+  }
+  &:hover ${BenefitHead} svg {
+    transform: translate(4px, 4px);
   }
 `;
+
+const ArrowDownRight = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M5 5l14 14M19 8v11H8"
+      stroke="#fff"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 /* ================================================================== */
 /*  TESTIMONIALS                                                       */
@@ -1145,12 +1300,6 @@ interface ServiceDetailsProps {
   relatedServices: Service[];
 }
 
-const checkIcon = (
-  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M5 12.5l4.5 4.5L19 7.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const ServiceDetails = ({ service, relatedServices }: ServiceDetailsProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -1215,6 +1364,24 @@ const ServiceDetails = ({ service, relatedServices }: ServiceDetailsProps) => {
                 trigger: el.parentElement,
                 start: "top bottom",
                 end: "bottom top",
+                scrub: 1,
+              },
+            }
+          );
+        });
+
+        /* Timeline dotted line draws as you scroll */
+        gsap.utils.toArray<HTMLElement>("[data-line]").forEach((el) => {
+          gsap.fromTo(
+            el,
+            { clipPath: "inset(0 0 100% 0)" },
+            {
+              clipPath: "inset(0 0 0% 0)",
+              ease: "none",
+              scrollTrigger: {
+                trigger: el.parentElement,
+                start: "top 70%",
+                end: "bottom 70%",
                 scrub: 1,
               },
             }
@@ -1461,17 +1628,24 @@ const ServiceDetails = ({ service, relatedServices }: ServiceDetailsProps) => {
             </Lead>
           </Intro>
 
-          <StepGrid>
-            {service.process.map((item) => (
-              <StepCard key={item.step} data-stagger>
-                <span>{item.step}</span>
-                <div>
+          <Timeline>
+            <TimelineLine data-line aria-hidden="true" />
+            {service.process.map((item, i) => (
+              <TimelineRow key={item.step} $flip={i % 2 === 1} data-reveal>
+                <TimelineText>
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
-                </div>
-              </StepCard>
+                </TimelineText>
+                <TimelineNum>
+                  <small>Step</small>
+                  <strong>{item.step}</strong>
+                </TimelineNum>
+                <TimelineIcon aria-hidden="true">
+                  {processIcons[i % processIcons.length]}
+                </TimelineIcon>
+              </TimelineRow>
             ))}
-          </StepGrid>
+          </Timeline>
         </Inner>
       </Block>
 
@@ -1488,11 +1662,20 @@ const ServiceDetails = ({ service, relatedServices }: ServiceDetailsProps) => {
           </Intro>
 
           <BenefitGrid>
-            {service.benefits.map((benefit) => (
-              <BenefitCard key={benefit.title} data-stagger>
-                <BenefitIcon>{checkIcon}</BenefitIcon>
-                <h3>{benefit.title}</h3>
-                <p>{benefit.description}</p>
+            {service.benefits.map((benefit, i) => (
+              <BenefitCard
+                key={benefit.title}
+                $c={accents[i % accents.length]}
+                data-stagger
+              >
+                <BenefitHead>
+                  <span className="num">{String(i + 1).padStart(2, "0")}.</span>
+                  <h3>{benefit.title}</h3>
+                  <ArrowDownRight />
+                </BenefitHead>
+                <BenefitBody>
+                  <p>{benefit.description}</p>
+                </BenefitBody>
               </BenefitCard>
             ))}
           </BenefitGrid>

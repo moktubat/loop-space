@@ -4,8 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/layout/Header";
 import StyledComponentsRegistry from "@/lib/registry";
 import Footer from "@/components/layout/Footer";
+import { GlobalStyle } from "@/styles/GlobalStyle";
 
-// Load Urbanist font
 const urbanist = Urbanist({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -14,8 +14,8 @@ const urbanist = Urbanist({
 });
 
 export const metadata: Metadata = {
-  title: "Your App",
-  description: "Your description",
+  title: "Loop Space Studio",
+  description: "Interior design studio crafting timeless, functional spaces.",
 };
 
 export default function RootLayout({
@@ -27,6 +27,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={urbanist.variable} suppressHydrationWarning>
         <StyledComponentsRegistry>
+          <GlobalStyle />
           <Navbar />
           {children}
           <Footer />
